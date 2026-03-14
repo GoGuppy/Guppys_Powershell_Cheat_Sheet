@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 28px 24px 48px; min-height: 100vh; }
+  h1 { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 20px; }
+  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; color: #e3b341; line-height: 1.6; }
+  .warning-box strong { color: #f0c040; }
+  .info-box { background: #0d1f35; border: 1px solid #1f4060; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #79c0ff; line-height: 1.6; }
+  .info-box strong { color: #a5d6ff; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 24px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key  { background: #0d2341; color: #58a6ff; }
+  .tag-slow { background: #2b1d04; color: #d29922; }
+  .tag-fire { background: #2b0d0d; color: #f85149; }
+  .tag-warn { background: #2b1d04; color: #e3b341; }
+  .tag-out  { background: #0d2b17; color: #3fb950; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 11.5px; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .f-base    { color: #79c0ff; }
+  .f-switch  { color: #3fb950; }
+  .f-from    { color: #ffa657; }
+  .f-to      { color: #bc8cff; }
+  .f-subject { color: #3fb950; }
+  .f-body    { color: #39c5cf; }
+  .f-after   { color: #e3b341; }
+  .f-before  { color: #f0883e; }
+  .f-attach  { color: #f85149; }
+  .f-and     { color: #484f58; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 12px 10px 44px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; color: #484f58; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h1>Tenant-Wide Email Purge · Cheat Sheet</h1>
+<div class="subtitle">Security &amp; Compliance Center · PowerShell · click any block to copy</div>
+
+<div class="warning-box">
+  <strong>⚠ Irreversible.</strong> SoftDelete = Recoverable Items (14–30 days). HardDelete = permanent. Always preview first.
+</div>
+
+<div class="info-box">
+  <strong>10-item limit per mailbox per run.</strong> If Items &gt; 0 after a purge, just re-run step 7a or 7b again. Repeat until Items = 0.
+</div>
+
+<div id="root"></div>
+
+<script>
+const searchRaw = `New-ComplianceSearch -Name "PurgeSearch" -ExchangeLocation All -ContentMatchQuery 'From:"sender@domain.com" AND To:"recipient@domain.com" AND Subject:"subject here" AND Body:"keyword here" AND Received>=2024-01-01 AND Received<=2024-12-31 AND HasAttachment:true'`;
+
+const sections = [
+  {
+    label: "Setup",
+    steps: [
+      { id:"1", title:"Connect to Security & Compliance", tag:"key",
+        desc:"Must use -EnableSearchOnlySession or purge will fail (CS019-001).",
+        raw:`Connect-IPPSSession -EnableSearchOnlySession`,
+        html:`<span class="f-base">Connect-IPPSSession </span><span class="f-switch">-EnableSearchOnlySession</span>` },
+    ]
+  },
+  {
+    label: "Create search — remove filters you don't need",
+    isSearch: true,
+  },
+  {
+    label: "Run & monitor",
+    steps: [
+      { id:"3", title:"Start the search", tag:"key",
+        desc:"Kicks off search — does NOT delete anything yet.",
+        raw:`Start-ComplianceSearch -Identity "PurgeSearch"`,
+        html:`<span class="f-base">Start-ComplianceSearch -Identity "PurgeSearch"</span>` },
+      { id:"4", title:"Check search status", tag:"slow",
+        desc:"Wait for Status: Completed before moving on.",
+        raw:`Get-ComplianceSearch -Identity "PurgeSearch" | Select-Object Name, Status, Items, Size`,
+        html:`<span class="f-base">Get-ComplianceSearch -Identity "PurgeSearch" | Select-Object Name, Status, Items, Size</span>` },
+    ]
+  },
+  {
+    label: "Preview before you purge",
+    steps: [
+      { id:"5", title:"Run a preview — always do this first", tag:"warn",
+        desc:"Confirms exactly what will be deleted. No exceptions.",
+        raw:`New-ComplianceSearchAction -SearchName "PurgeSearch" -Preview`,
+        html:`<span class="f-base">New-ComplianceSearchAction -SearchName "PurgeSearch" -Preview</span>` },
+      { id:"6", title:"Check preview results", tag:"warn",
+        desc:"Item count per mailbox — verify before committing.",
+        raw:`Get-ComplianceSearchAction -Identity "PurgeSearch_Preview" | Format-List`,
+        html:`<span class="f-base">Get-ComplianceSearchAction -Identity "PurgeSearch_Preview" | Format-List</span>` },
+    ]
+  },
+  {
+    label: "Purge",
+    steps: [
+      { id:"7a", title:"Soft delete — recoverable 14–30 days", tag:"fire",
+        desc:"PowerShell will prompt Y/N — intentional safety check.",
+        raw:`New-ComplianceSearchAction -SearchName "PurgeSearch" -Purge -PurgeType SoftDelete`,
+        html:`<span class="f-base">New-ComplianceSearchAction -SearchName "PurgeSearch" -Purge -PurgeType SoftDelete</span>` },
+      { id:"7b", title:"Hard delete — permanent, no recovery", tag:"fire",
+        desc:"PowerShell will prompt Y/N — intentional safety check.",
+        raw:`New-ComplianceSearchAction -SearchName "PurgeSearch" -Purge -PurgeType HardDelete`,
+        html:`<span class="f-base">New-ComplianceSearchAction -SearchName "PurgeSearch" -Purge -PurgeType HardDelete</span>` },
+      { id:"8", title:"Check purge status", tag:"slow",
+        desc:"Wait for Completed before checking remaining count.",
+        raw:`Get-ComplianceSearchAction -Identity "PurgeSearch_Purge" | Select-Object Name, Status, Results`,
+        html:`<span class="f-base">Get-ComplianceSearchAction -Identity "PurgeSearch_Purge" | Select-Object Name, Status, Results</span>` },
+      { id:"9", title:"Check remaining items — re-run purge if > 0", tag:"slow",
+        desc:"Repeat 7a or 7b until this hits 0.",
+        raw:`Get-ComplianceSearch -Identity "PurgeSearch" | Select-Object Name, Items`,
+        html:`<span class="f-base">Get-ComplianceSearch -Identity "PurgeSearch" | Select-Object Name, Items</span>` },
+    ]
+  },
+  {
+    label: "Done",
+    steps: [
+      { id:"10", title:"Disconnect", tag:"out",
+        desc:"Close the compliance session cleanly.",
+        raw:`Disconnect-ExchangeOnline -Confirm:$false`,
+        html:`<span class="f-base">Disconnect-ExchangeOnline -Confirm:$false</span>` },
+    ]
+  }
+];
+
+const tagMap = {
+  key:  { label:"required",      cls:"tag-key"  },
+  slow: { label:"wait for it",   cls:"tag-slow" },
+  fire: { label:"destructive",   cls:"tag-fire" },
+  warn: { label:"do this first", cls:"tag-warn" },
+  out:  { label:"cleanup",       cls:"tag-out"  },
+};
+
+function makeCard(s) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const tagHTML = s.tag && tagMap[s.tag] ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">${s.id}</div>
+      <div class="card-info">
+        <div class="card-title">${s.title} ${tagHTML}</div>
+        <div class="card-desc">${s.desc}</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${s.html}</div>
+      <button class="copy-btn">copy</button>
+    </div>`;
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(s.raw).then(() => {
+      this.textContent = '✓ copied'; this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+  return card;
+}
+
+function makeSearchCard() {
+  const searchHtml =
+    `<span class="f-base">New-ComplianceSearch -Name "PurgeSearch" -ExchangeLocation All -ContentMatchQuery '</span>` +
+    `<span class="f-from">From:"sender@domain.com"</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-to">To:"recipient@domain.com"</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-subject">Subject:"subject here"</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-body">Body:"keyword here"</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-after">Received&gt;=2024-01-01</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-before">Received&lt;=2024-12-31</span>` +
+    `<span class="f-and"> AND </span>` +
+    `<span class="f-attach">HasAttachment:true</span>` +
+    `<span class="f-base">'</span>`;
+
+  const legend = [
+    { color:'#ffa657', label:'From (sender)' },
+    { color:'#bc8cff', label:'To (recipient)' },
+    { color:'#3fb950', label:'Subject' },
+    { color:'#39c5cf', label:'Body keyword' },
+    { color:'#e3b341', label:'Received >= (after)' },
+    { color:'#f0883e', label:'Received <= (before)' },
+    { color:'#f85149', label:'HasAttachment' },
+    { color:'#484f58', label:'AND — keep between filters' },
+  ];
+
+  const legendHTML = legend.map(l =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${l.color}"></div>${l.label}</div>`
+  ).join('');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">2</div>
+      <div class="card-info">
+        <div class="card-title">New compliance search <span class="tag tag-key">all filters</span></div>
+        <div class="card-desc">Copy the full line — delete filters you don't need. Keep AND between each remaining filter.</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${searchHtml}</div>
+      <button class="copy-btn">copy</button>
+    </div>
+    <div class="legend">${legendHTML}</div>`;
+
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(searchRaw).then(() => {
+      this.textContent = '✓ copied'; this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+  return card;
+}
+
+const root = document.getElementById('root');
+sections.forEach(sec => {
+  const lbl = document.createElement('div');
+  lbl.className = 'section-label';
+  lbl.textContent = sec.label;
+  root.appendChild(lbl);
+  if (sec.isSearch) { root.appendChild(makeSearchCard()); return; }
+  sec.steps.forEach(s => root.appendChild(makeCard(s)));
+});
+</script>
+</body>
+</html>

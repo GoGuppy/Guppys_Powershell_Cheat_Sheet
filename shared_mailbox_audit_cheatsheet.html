@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f1117;
+    color: #c9d1d9;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 28px 24px 48px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #6e7681;
+    margin-bottom: 28px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #484f58;
+    margin: 24px 0 8px 2px;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    margin-bottom: 7px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .card:hover { border-color: #30363d; }
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px 9px;
+  }
+  .step {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #6e7681;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e6edf3;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+  .card-desc {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+  .tag-key  { background: #0d2341; color: #58a6ff; }
+  .tag-slow { background: #2b1d04; color: #d29922; }
+  .tag-fire { background: #2b0d0d; color: #f85149; }
+  .tag-out  { background: #0d2b17; color: #3fb950; }
+  .code-wrap {
+    position: relative;
+    margin: 0 12px 10px 44px;
+  }
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 8px 44px 8px 10px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 11.5px;
+    color: #79c0ff;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.65;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 5px;
+    color: #8b949e;
+    font-size: 10px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .1s, color .1s;
+  }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tip {
+    font-size: 10px;
+    color: #484f58;
+    margin-top: 4px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<h1>Shared Mailbox Audit · Cheat Sheet</h1>
+<div class="subtitle">ExchangeOnlineManagement · PowerShell · click any block to copy</div>
+
+<div id="root"></div>
+
+<script>
+const sections = [
+  {
+    label: "Setup",
+    steps: [
+      { n:1, title:"Connect to Exchange Online", tag:"key",
+        desc:"Authenticate to tenant — required before anything.",
+        code:"Connect-ExchangeOnline" },
+      { n:2, title:"Pull all shared mailboxes", tag:"key",
+        desc:"Store every shared mailbox — bypass 1000 default cap.",
+        code:"$mailboxes = Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited" },
+      { n:3, title:"Count them",
+        desc:"Sanity check — just prints a number.",
+        code:"$mailboxes.Count" },
+    ]
+  },
+  {
+    label: "Inspect one mailbox first",
+    steps: [
+      { n:4, title:"Dump all properties", 
+        desc:"See every available property before you filter.",
+        code:"$mailboxes[0] | Format-List *" },
+      { n:5, title:"Basic readable table",
+        desc:"Name, email, creation date, hidden-from-GAL status.",
+        code:"$mailboxes | Select-Object DisplayName, PrimarySmtpAddress, WhenCreated, HiddenFromAddressListsEnabled | Format-Table -AutoSize" },
+      { n:6, title:"Test stats on ONE mailbox", tag:"key",
+        desc:"Always test one object before looping hundreds.",
+        code:"$stats = Get-MailboxStatistics -Identity $mailboxes[0].PrimarySmtpAddress" },
+      { n:7, title:"See what stats returns",
+        desc:"Reveals LastLogonTime, ItemCount, TotalItemSize and more.",
+        code:"$stats | Format-List *" },
+      { n:8, title:"Pull just the fields you care about",
+        desc:"Scoped view — display name, logon, size, count.",
+        code:"$stats | Select-Object DisplayName, LastLogonTime, ItemCount, TotalItemSize" },
+      { n:9, title:"Check Full Access members — one mailbox", tag:"key",
+        desc:"Filters out system accounts and inherited permissions.",
+        code:`Get-MailboxPermission -Identity $mailboxes[0].PrimarySmtpAddress | Where-Object { $_.AccessRights -like "*FullAccess*" -and $_.User -notlike "NT AUTHORITY*" -and $_.IsInherited -eq $false }` },
+      { n:10, title:"Just the usernames — no noise",
+        desc:"-ExpandProperty flattens result to plain UPN strings.",
+        code:`Get-MailboxPermission -Identity $mailboxes[0].PrimarySmtpAddress | Where-Object { $_.AccessRights -like "*FullAccess*" -and $_.User -notlike "NT AUTHORITY*" -and $_.IsInherited -eq $false } | Select-Object -ExpandProperty User` },
+    ]
+  },
+  {
+    label: "Loop everything",
+    steps: [
+      { n:11, title:"Get stats for ALL mailboxes", tag:"slow",
+        desc:"Runs Get-MailboxStatistics on every mailbox. Slow.",
+        code:"$allStats = $mailboxes | ForEach-Object { Get-MailboxStatistics -Identity $_.PrimarySmtpAddress }" },
+      { n:16, title:"Get members for ALL mailboxes", tag:"slow",
+        desc:"Tags every permission row with its mailbox name.",
+        code:`$allPerms = $mailboxes | ForEach-Object {
+    $mbx = $_
+    Get-MailboxPermission -Identity $mbx.PrimarySmtpAddress |
+    Where-Object { $_.AccessRights -like "*FullAccess*" -and $_.User -notlike "NT AUTHORITY*" -and $_.IsInherited -eq $false } |
+    Select-Object @{N="Mailbox";E={$mbx.DisplayName}}, User
+}` },
+    ]
+  },
+  {
+    label: "Find retire candidates",
+    steps: [
+      { n:12, title:"Inactive mailboxes — 180+ days", tag:"fire",
+        desc:"Surfaces anything untouched for 6+ months.",
+        code:`$allStats | Where-Object { $_.LastLogonTime -lt (Get-Date).AddDays(-180) } | Select-Object DisplayName, LastLogonTime, ItemCount | Sort-Object LastLogonTime | Format-Table -AutoSize` },
+      { n:13, title:"Never logged into — ever", tag:"fire",
+        desc:"Created and never opened. Strongest retire candidates.",
+        code:`$allStats | Where-Object { $_.LastLogonTime -eq $null } | Select-Object DisplayName, ItemCount, TotalItemSize | Format-Table -AutoSize` },
+      { n:14, title:"Combine both into one variable", tag:"fire",
+        desc:"Single list: dead OR near-dead mailboxes.",
+        code:`$retireCandidates = $allStats | Where-Object { $_.LastLogonTime -eq $null -or $_.LastLogonTime -lt (Get-Date).AddDays(-180) }
+$retireCandidates.Count` },
+      { n:15, title:"Sort most dead first",
+        desc:"Nulls (never used) float to top — clear wins.",
+        code:`$retireCandidates | Select-Object DisplayName, LastLogonTime, ItemCount, TotalItemSize | Sort-Object LastLogonTime | Format-Table -AutoSize` },
+      { n:17, title:"Find mailboxes with NO members at all", tag:"fire",
+        desc:"No members + no logon = almost certainly safe to retire.",
+        code:`$mailboxesWithMembers = $allPerms | Select-Object -ExpandProperty Mailbox -Unique
+$mailboxes | Where-Object { $_.DisplayName -notin $mailboxesWithMembers } | Select-Object DisplayName, PrimarySmtpAddress` },
+    ]
+  },
+  {
+    label: "Export & cleanup",
+    steps: [
+      { n:18, title:"Export all stats to CSV", tag:"out",
+        desc:"Full stats for every shared mailbox to desktop.",
+        code:`$allStats | Select-Object DisplayName, LastLogonTime, ItemCount, TotalItemSize | Export-Csv "$env:USERPROFILE\\Desktop\\mailbox_audit.csv" -NoTypeInformation` },
+      { n:19, title:"Export retire candidates to CSV", tag:"out",
+        desc:"Separate file — hand this to your manager.",
+        code:`$retireCandidates | Select-Object DisplayName, LastLogonTime, ItemCount, TotalItemSize | Export-Csv "$env:USERPROFILE\\Desktop\\retire_candidates.csv" -NoTypeInformation` },
+      { n:20, title:"Disconnect when done",
+        desc:"Clean up — don't leave Exchange sessions hanging.",
+        code:"Disconnect-ExchangeOnline -Confirm:$false" },
+    ]
+  }
+];
+
+const tagMap = {
+  key:  { label:"foundation", cls:"tag-key" },
+  slow: { label:"slow — coffee time", cls:"tag-slow" },
+  fire: { label:"retire signal", cls:"tag-fire" },
+  out:  { label:"export", cls:"tag-out" },
+};
+
+const root = document.getElementById('root');
+
+sections.forEach(sec => {
+  const lbl = document.createElement('div');
+  lbl.className = 'section-label';
+  lbl.textContent = sec.label;
+  root.appendChild(lbl);
+
+  sec.steps.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const tagHTML = s.tag && tagMap[s.tag]
+      ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>`
+      : '';
+
+    const escaped = s.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="step">${s.n}</div>
+        <div class="card-info">
+          <div class="card-title">${s.title} ${tagHTML}</div>
+          <div class="card-desc">${s.desc}</div>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-block">${escaped}</div>
+        <button class="copy-btn">copy</button>
+      </div>`;
+
+    card.querySelector('.copy-btn').addEventListener('click', function() {
+      navigator.clipboard.writeText(s.code).then(() => {
+        this.textContent = '✓ copied';
+        this.classList.add('done');
+        setTimeout(() => {
+          this.textContent = 'copy';
+          this.classList.remove('done');
+        }, 1600);
+      });
+    });
+
+    root.appendChild(card);
+  });
+});
+</script>
+</body>
+</html>
