@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inactive Licensed Users · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: #0f1117;
+    border-bottom: 1px solid #21262d;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box {
+    background: #58a6ff; color: #0d1117;
+    font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700;
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+
+  /* ── Hero ── */
+  .hero { max-width: 860px; margin: 0 auto; padding: 44px 32px 28px; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 14px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .hero h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+  .hero p { font-size: 13px; color: #8b949e; line-height: 1.6; max-width: 560px; }
+  .pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .pill { font-family: 'Consolas', monospace; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .pill-blue   { background: #0d1f35; color: #58a6ff; border: 1px solid #1f4060; }
+  .pill-purple { background: #1a1230; color: #bc8cff; border: 1px solid #2a1a4a; }
+
+  /* ── Main layout ── */
+  .main { max-width: 860px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #484f58;
+    margin: 36px 0 12px 2px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    transition: border-color .15s;
+    position: relative;
+  }
+  .card:hover { border-color: #30363d; }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* Step circle */
+  .step-num {
+    background: #21262d;
+    color: #8b949e;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .card-meta { flex: 1; }
+  .card-title { font-size: 14px; font-weight: 600; color: #e6edf3; margin-bottom: 4px; }
+  .card-desc  { font-size: 12px; color: #6e7681; line-height: 1.5; }
+
+  /* Tags */
+  .tag {
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .tag-foundation { background: #0d2341; color: #58a6ff; }
+  .tag-slow       { background: #2b1d04; color: #d29922; }
+  .tag-retire     { background: #2b0d0d; color: #f85149; }
+  .tag-export     { background: #0d2b17; color: #3fb950; }
+
+  /* Code block */
+  .code-wrap { position: relative; margin-top: 4px; }
+  pre {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 14px 16px;
+    padding-right: 80px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    color: #79c0ff;
+    overflow-x: auto;
+    line-height: 1.65;
+    white-space: pre;
+  }
+
+  /* Copy button */
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 5px;
+    color: #8b949e;
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; border-color: #484f58; }
+  .copy-btn.copied { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+
+  /* ── Note box ── */
+  .note {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 3px solid #d29922;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #8b949e;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .note strong { color: #d29922; }
+
+  /* ── Footer ── */
+  footer {
+    max-width: 860px;
+    margin: 56px auto 0;
+    padding: 20px 32px 0;
+    border-top: 1px solid #21262d;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    color: #484f58;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  footer a { color: #58a6ff; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Entra ID</a>
+</header>
+
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a> ›
+    <a href="index.html">Entra ID / Graph</a> ›
+    Inactive Licensed Users
+  </div>
+  <h1>🔎 Inactive Licensed Users</h1>
+  <p>Scan a tenant for licensed accounts with 60+ days of inactivity. Run each step in order — confirm results before taking any action.</p>
+  <div class="pills">
+    <span class="pill pill-blue">AZ-104</span>
+    <span class="pill pill-purple">Graph</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── SETUP ── -->
+  <div class="section-label">Setup</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">1</div>
+      <div class="card-meta">
+        <div class="card-title">Install Graph Module</div>
+        <div class="card-desc">Install once. Skip if already installed.</div>
+      </div>
+      <span class="tag tag-foundation">foundation</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code1">Install-Module Microsoft.Graph -Scope CurrentUser</pre>
+      <button class="copy-btn" onclick="copyCode('code1', this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">2</div>
+      <div class="card-meta">
+        <div class="card-title">Connect to Microsoft Graph</div>
+        <div class="card-desc">Authenticate with read-only scopes for this scan.</div>
+      </div>
+      <span class="tag tag-foundation">foundation</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code2">Connect-MgGraph -Scopes "User.Read.All", "AuditLog.Read.All"</pre>
+      <button class="copy-btn" onclick="copyCode('code2', this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- ── CONFIGURE ── -->
+  <div class="section-label">Configure</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">3</div>
+      <div class="card-meta">
+        <div class="card-title">Set Inactive Threshold</div>
+        <div class="card-desc">Define cutoff — change 60 to whatever you need.</div>
+      </div>
+      <span class="tag tag-foundation">foundation</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code3">$DaysInactive = 60
+$CutoffDate   = (Get-Date).AddDays(-$DaysInactive)</pre>
+      <button class="copy-btn" onclick="copyCode('code3', this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- ── QUERY ── -->
+  <div class="section-label">Query</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">4</div>
+      <div class="card-meta">
+        <div class="card-title">Pull All Licensed Active Users</div>
+        <div class="card-desc">Queries all enabled, licensed accounts with sign-in data.</div>
+      </div>
+      <span class="tag tag-slow">slow</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code4">$Users = Get-MgUser -All `
+    -Filter "assignedLicenses/`$count ne 0 and accountEnabled eq true" `
+    -CountVariable TotalCount `
+    -ConsistencyLevel eventual `
+    -Property "id, displayName, userPrincipalName, signInActivity, assignedLicenses"</pre>
+      <button class="copy-btn" onclick="copyCode('code4', this)">Copy</button>
+    </div>
+    <div class="note"><strong>Note:</strong> Large tenants may take a minute. The <code style="color:#79c0ff;font-family:Consolas">-ConsistencyLevel eventual</code> flag is required for <code style="color:#79c0ff;font-family:Consolas">$count</code> filters.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">5</div>
+      <div class="card-meta">
+        <div class="card-title">Sanity Check — User Count</div>
+        <div class="card-desc">Verify the query returned results before continuing.</div>
+      </div>
+      <span class="tag tag-foundation">foundation</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code5">$Users.Count</pre>
+      <button class="copy-btn" onclick="copyCode('code5', this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- ── FILTER ── -->
+  <div class="section-label">Filter</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">6</div>
+      <div class="card-meta">
+        <div class="card-title">Filter to Inactive Users Only</div>
+        <div class="card-desc">Isolates accounts past the cutoff or with no sign-in ever.</div>
+      </div>
+      <span class="tag tag-retire">retire signal</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code6">$InactiveUsers = $Users | Where-Object {
+    $lastSignIn = $_.SignInActivity?.LastSignInDateTime
+    ($null -eq $lastSignIn) -or ([datetime]$lastSignIn -lt $CutoffDate)
+}
+
+$InactiveUsers.Count</pre>
+      <button class="copy-btn" onclick="copyCode('code6', this)">Copy</button>
+    </div>
+    <div class="note"><strong>Note:</strong> <code style="color:#79c0ff;font-family:Consolas">$null</code> sign-in = account was created but never used. Counts as inactive.</div>
+  </div>
+
+  <!-- ── REVIEW ── -->
+  <div class="section-label">Review</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">7</div>
+      <div class="card-meta">
+        <div class="card-title">View Results in Console</div>
+        <div class="card-desc">Display inactive users sorted by last sign-in date.</div>
+      </div>
+      <span class="tag tag-foundation">foundation</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code7">$InactiveUsers | Select-Object DisplayName, UserPrincipalName,
+    @{ Name = "LastSignIn"; Expression = {
+        $_.SignInActivity?.LastSignInDateTime ?? "Never"
+    }} |
+    Sort-Object LastSignIn |
+    Format-Table -AutoSize</pre>
+      <button class="copy-btn" onclick="copyCode('code7', this)">Copy</button>
+    </div>
+  </div>
+
+  <!-- ── EXPORT ── -->
+  <div class="section-label">Export</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">8</div>
+      <div class="card-meta">
+        <div class="card-title">Export to CSV</div>
+        <div class="card-desc">Save results to file before touching anything.</div>
+      </div>
+      <span class="tag tag-export">export</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="code8">$InactiveUsers | Select-Object DisplayName, UserPrincipalName,
+    @{ Name = "LastSignIn"; Expression = {
+        $_.SignInActivity?.LastSignInDateTime ?? "Never"
+    }} |
+    Export-Csv -Path ".\InactiveUsers_$(Get-Date -Format 'yyyyMMdd').csv" -NoTypeInformation</pre>
+      <button class="copy-btn" onclick="copyCode('code8', this)">Copy</button>
+    </div>
+    <div class="note"><strong>Don't be stupid!!!</strong> Always export and review the CSV before running any disable or licensing changes against this list.</div>
+  </div>
+
+  <!-- ── FULL SCRIPT ── -->
+  <div class="section-label">Full Script</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">⚡</div>
+      <div class="card-meta">
+        <div class="card-title">Inactive Licensed Users — Detection Only</div>
+        <div class="card-desc">All steps combined. Scans and exports. Nothing gets touched.</div>
+      </div>
+      <span class="tag tag-export">export</span>
+    </div>
+    <div class="code-wrap">
+      <pre id="codefull"># Connect
+Connect-MgGraph -Scopes "User.Read.All", "AuditLog.Read.All"
+
+# Set threshold
+$DaysInactive = 60
+$CutoffDate   = (Get-Date).AddDays(-$DaysInactive)
+
+# Pull all licensed, enabled users
+$Users = Get-MgUser -All `
+    -Filter "assignedLicenses/`$count ne 0 and accountEnabled eq true" `
+    -CountVariable TotalCount `
+    -ConsistencyLevel eventual `
+    -Property "id, displayName, userPrincipalName, signInActivity, assignedLicenses"
+
+# Filter to inactive only
+$InactiveUsers = $Users | Where-Object {
+    $lastSignIn = $_.SignInActivity?.LastSignInDateTime
+    ($null -eq $lastSignIn) -or ([datetime]$lastSignIn -lt $CutoffDate)
+}
+
+# Preview in console
+$InactiveUsers | Select-Object DisplayName, UserPrincipalName,
+    @{ Name = "LastSignIn"; Expression = {
+        $_.SignInActivity?.LastSignInDateTime ?? "Never"
+    }} |
+    Sort-Object LastSignIn |
+    Format-Table -AutoSize
+
+# Export to CSV
+$InactiveUsers | Select-Object DisplayName, UserPrincipalName,
+    @{ Name = "LastSignIn"; Expression = {
+        $_.SignInActivity?.LastSignInDateTime ?? "Never"
+    }} |
+    Export-Csv -Path ".\InactiveUsers_$(Get-Date -Format 'yyyyMMdd').csv" -NoTypeInformation
+
+Write-Host "Done. $($InactiveUsers.Count) inactive users exported." -ForegroundColor Green</pre>
+      <button class="copy-btn" onclick="copyCode('codefull', this)">Copy</button>
+    </div>
+    <div class="note"><strong>Don't be stupid!!!</strong> This script is detection only — review the CSV before running any disable or licensing changes.</div>
+  </div>
+
+</div><!-- /main -->
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+  <a href="https://github.com/GoGuppy/GuppysPowershellCheatSheet" target="_blank">github.com/GoGuppy/GuppysPowershellCheatSheet</a>
+</footer>
+
+<script>
+  function copyCode(id, btn) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
