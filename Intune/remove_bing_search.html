@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remove Bing from Search Bar · Intune · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
+  header { background: #0d1117; border-bottom: 1px solid #21262d; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box { background: #58a6ff; color: #0d1117; font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 32px 0; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 16px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
+  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #e3b341; line-height: 1.6; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 11.5px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key  { background: #0d2341; color: #58a6ff; }
+  .tag-info { background: #0d2626; color: #39c5cf; }
+  /* Platform script settings panel */
+  .settings-panel { background: #161b22; border: 1px solid #21262d; border-radius: 8px; overflow: hidden; margin-bottom: 7px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid #21262d; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-key { font-size: 12px; color: #8b949e; }
+  .badge { font-family: 'Consolas', monospace; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .badge-yes { background: #0d2b17; color: #3fb950; border: 1px solid #1a4226; }
+  .badge-no  { background: #2b0d0d; color: #f85149; border: 1px solid #4a1515; }
+  footer { max-width: 860px; margin: 48px auto 0; padding: 20px 32px 0; border-top: 1px solid #21262d; font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Intune</a>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Intune</a> › Remove Bing from Search Bar</div>
+  <h1>🔍 Remove Bing from Search Bar</h1>
+  <div class="subtitle">Intune Platform Script · MD-102 · Removes Bing web results from Windows Start menu search via registry</div>
+
+  <div class="warning-box">
+    This writes to <code style="font-family:Consolas,monospace">HKCU</code> — must run as the logged-on user or the key lands in the wrong hive and does nothing.
+  </div>
+
+  <div class="section-label">Script</div>
+
+  <div class="card">
+    <div class="card-top">
+      <div class="step">1</div>
+      <div class="card-info">
+        <div class="card-title">Disable BingSearchEnabled <span class="tag tag-key">required</span></div>
+        <div class="card-desc">Creates the key if missing, then sets BingSearchEnabled to 0.</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block" id="script">$path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
+If (!(Test-Path $path)) { New-Item -Path $path -Force }
+Set-ItemProperty -Path $path -Name "BingSearchEnabled" -Value 0 -Type DWord -Force</div>
+      <button class="copy-btn" onclick="copyScript(this)">copy</button>
+    </div>
+  </div>
+
+  <div class="section-label">Intune Platform Script Settings</div>
+
+  <div class="settings-panel">
+    <div class="settings-row">
+      <span class="settings-key">Run this script using the logged on credentials</span>
+      <span class="badge badge-yes">Yes</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-key">Enforce script signature check</span>
+      <span class="badge badge-no">No</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-key">Run script in 64 bit PowerShell Host</span>
+      <span class="badge badge-yes">Yes</span>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+  <a href="https://github.com/GoGuppy/GuppysPowershellCheatSheet" target="_blank">github.com/GoGuppy/GuppysPowershellCheatSheet</a>
+</footer>
+
+<script>
+function copyScript(btn) {
+  const code = document.getElementById('script').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓ copied';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('done'); }, 1600);
+  });
+}
+</script>
+</body>
+</html>
