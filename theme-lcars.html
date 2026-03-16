@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>LCARS Theme Demo · Guppy's PS Cheat Sheets</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; color: #FF9900; font-family: "Antonio", "Helvetica Neue", "Arial Narrow", sans-serif; min-height: 100vh; padding-bottom: 80px; }
+
+/* LCARS Header */
+header { background: #000; border-bottom: 4px solid #FF9900; padding: 0; height: 64px; display: flex; align-items: stretch; position: sticky; top: 0; z-index: 10; }
+.header-elbow { width: 120px; background: #FF9900; border-bottom-right-radius: 32px; display: flex; align-items: center; justify-content: flex-end; padding-right: 16px; flex-shrink: 0; }
+.header-elbow .logo-text { font-size: 11px; font-weight: 700; letter-spacing: .15em; color: #000; text-transform: uppercase; }
+.header-bar { flex: 1; display: flex; align-items: center; padding: 0 24px; gap: 12px; }
+.header-pill { background: #CC88FF; color: #000; font-size: 10px; font-weight: 700; letter-spacing: .12em; padding: 4px 14px; border-radius: 999px; text-transform: uppercase; }
+.header-pill.orange { background: #FF9900; }
+.header-pill.blue { background: #9999FF; }
+.header-title { font-size: 18px; font-weight: 700; letter-spacing: .08em; color: #FF9900; margin-left: 12px; text-transform: uppercase; }
+.back { font-size: 11px; color: #CC88FF; text-decoration: none; letter-spacing: .1em; margin-left: auto; text-transform: uppercase; }
+
+/* Hero */
+.hero { max-width: 960px; margin: 0 auto; padding: 40px 32px 24px; display: flex; gap: 24px; align-items: flex-start; }
+.hero-sidebar { display: flex; flex-direction: column; gap: 8px; width: 80px; flex-shrink: 0; }
+.hero-block { background: #FF9900; border-radius: 12px 0 0 12px; height: 28px; }
+.hero-block.purple { background: #CC88FF; height: 18px; }
+.hero-block.blue { background: #9999FF; height: 22px; }
+.hero-block.yellow { background: #FFCC00; height: 14px; }
+.hero-content { flex: 1; border-left: 3px solid #FF9900; padding-left: 24px; }
+.breadcrumb { font-size: 11px; color: #CC88FF; letter-spacing: .1em; margin-bottom: 10px; text-transform: uppercase; }
+.breadcrumb a { color: #FF9900; text-decoration: none; }
+.hero h1 { font-size: 28px; font-weight: 700; letter-spacing: .1em; color: #FF9900; text-transform: uppercase; margin-bottom: 6px; }
+.hero p { font-size: 12px; color: #CC88FF; line-height: 1.7; letter-spacing: .04em; max-width: 540px; }
+.pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.pill { font-size: 10px; font-weight: 700; padding: 3px 12px; border-radius: 999px; letter-spacing: .1em; text-transform: uppercase; }
+.pill-orange { background: #FF9900; color: #000; }
+.pill-purple { background: #CC88FF; color: #000; }
+.pill-blue { background: #9999FF; color: #000; }
+
+/* Main */
+.main { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+.section-row { display: flex; align-items: center; gap: 0; margin: 32px 0 12px; }
+.section-cap { background: #FF9900; width: 60px; height: 28px; border-radius: 14px 0 0 14px; flex-shrink: 0; }
+.section-cap.purple { background: #CC88FF; }
+.section-line { flex: 1; height: 28px; background: #111; border-top: 2px solid #FF9900; border-bottom: 2px solid #FF9900; display: flex; align-items: center; padding-left: 16px; }
+.section-line.purple { border-color: #CC88FF; }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: .2em; color: #FF9900; text-transform: uppercase; }
+.section-label.purple { color: #CC88FF; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px; }
+.card { background: #0A0A0A; border: 2px solid #FF9900; border-left: 8px solid #FF9900; padding: 16px 18px; text-decoration: none; display: block; transition: background .15s; border-radius: 0; }
+.card:hover { background: #1A0A00; }
+.card.coming { opacity: .35; pointer-events: none; border-color: #441100; border-left-color: #441100; }
+.card-emoji { font-size: 18px; margin-bottom: 8px; display: block; }
+.card-title { font-size: 13px; font-weight: 700; color: #FF9900; margin-bottom: 5px; letter-spacing: .05em; text-transform: uppercase; }
+.card-desc { font-size: 11px; color: #886633; line-height: 1.5; margin-bottom: 12px; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; }
+.card-tag { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; }
+.t-orange { background: #FF9900; color: #000; }
+.t-purple { background: #CC88FF; color: #000; }
+.t-blue { background: #9999FF; color: #000; }
+.t-red { background: #FF4444; color: #000; }
+.t-yellow { background: #FFCC00; color: #000; }
+.t-green { background: #33FF88; color: #000; }
+.card-arrow { color: #FF9900; font-size: 16px; font-weight: 700; }
+.coming-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #1A0A00; color: #441100; letter-spacing: .08em; text-transform: uppercase; border: 1px solid #441100; }
+
+footer { max-width: 960px; margin: 48px auto 0; padding: 0 32px; display: flex; align-items: stretch; gap: 0; height: 40px; }
+.footer-cap { background: #FF9900; width: 48px; border-radius: 0 20px 20px 0; }
+.footer-text { flex: 1; border-top: 2px solid #FF9900; border-bottom: 2px solid #FF9900; display: flex; align-items: center; padding: 0 20px; font-size: 11px; color: #886633; letter-spacing: .08em; text-transform: uppercase; gap: 16px; }
+.footer-text a { color: #FF9900; text-decoration: none; }
+</style></head><body>
+<header>
+  <div class="header-elbow"><span class="logo-text">PS</span></div>
+  <div class="header-bar">
+    <span class="header-pill orange">LCARS</span>
+    <span class="header-pill blue">AZ-104</span>
+    <span class="header-pill">MD-102</span>
+    <span class="header-title">Guppy's PowerShell CheatSheet</span>
+    <a class="back" href="#">← Home</a>
+  </div>
+</header>
+<div class="hero">
+  <div class="hero-sidebar">
+    <div class="hero-block"></div>
+    <div class="hero-block purple"></div>
+    <div class="hero-block blue"></div>
+    <div class="hero-block yellow"></div>
+    <div class="hero-block purple"></div>
+  </div>
+  <div class="hero-content">
+    <div class="breadcrumb"><a href="#">Home</a> › Azure</div>
+    <h1>☁️ Azure</h1>
+    <p>Resource management, virtual machines, networking, storage and security. Don't be stupid!!! Make sure to test first before using in production.</p>
+    <div class="pills">
+      <span class="pill pill-orange">AZ-104</span>
+      <span class="pill pill-purple">AZ-700</span>
+    </div>
+  </div>
+</div>
+<div class="main">
+  <div class="section-row"><div class="section-cap"></div><div class="section-line"><span class="section-label">Resource Management</span></div></div>
+  <div class="grid">
+    <a class="card" href="#"><span class="card-emoji">📋</span><div class="card-title">List Subscriptions, Resource Groups & Resources</div><div class="card-desc">List subscriptions, resource groups, and everything inside a group.</div><div class="card-footer"><div style="display:flex;gap:4px"><span class="card-tag t-orange">AZ-104</span></div><span class="card-arrow">›</span></div></a>
+    <div class="card coming"><span class="card-emoji">🔒</span><div class="card-title">Lock Resource Group from Deletion</div><div class="card-desc">Apply a delete lock to prevent accidental removal.</div><div class="card-footer"><div style="display:flex;gap:4px"><span class="card-tag t-red">Security</span></div><span class="coming-badge">standby</span></div></div>
+    <div class="card coming"><span class="card-emoji">🔑</span><div class="card-title">Create Azure Key Vault</div><div class="card-desc">Create a Key Vault and store a secret via PowerShell.</div><div class="card-footer"><div style="display:flex;gap:4px"><span class="card-tag t-yellow">Security</span></div><span class="coming-badge">standby</span></div></div>
+  </div>
+  <div class="section-row"><div class="section-cap purple"></div><div class="section-line purple"><span class="section-label purple">Virtual Machines</span></div></div>
+  <div class="grid">
+    <a class="card" href="#" style="border-color:#9999FF;border-left-color:#9999FF"><span class="card-emoji">🖥️</span><div class="card-title" style="color:#9999FF">Create a Windows VM</div><div class="card-desc">Full Windows VM deployment from scratch via PowerShell.</div><div class="card-footer"><div style="display:flex;gap:4px"><span class="card-tag t-blue">AZ-104</span></div><span class="card-arrow" style="color:#9999FF">›</span></div></a>
+    <a class="card" href="#" style="border-color:#33FF88;border-left-color:#33FF88"><span class="card-emoji">🐧</span><div class="card-title" style="color:#33FF88">Create a Linux VM</div><div class="card-desc">Full Linux VM deployment from scratch via PowerShell.</div><div class="card-footer"><div style="display:flex;gap:4px"><span class="card-tag t-green">AZ-104</span></div><span class="card-arrow" style="color:#33FF88">›</span></div></a>
+  </div>
+</div>
+<footer>
+  <div class="footer-cap"></div>
+  <div class="footer-text"><span>GoGuppy · GuppysPowershellCheatSheet</span><a href="#">github.com/GoGuppy/GuppysPowershellCheatSheet</a></div>
+</footer>
+</body></html>

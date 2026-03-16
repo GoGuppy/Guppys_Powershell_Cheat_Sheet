@@ -75,13 +75,12 @@
       <div class="step">1</div>
       <div class="card-info">
         <div class="card-title">Disable BingSearchEnabled <span class="tag tag-key">required</span></div>
-        <div class="card-desc">Creates the key if missing, then sets BingSearchEnabled to 0.</div>
+        <div class="card-desc">Sets BingSearchEnabled to 0 in the registry.</div>
       </div>
     </div>
     <div class="code-wrap">
-      <div class="code-block" id="script">$path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
-If (!(Test-Path $path)) { New-Item -Path $path -Force }
-Set-ItemProperty -Path $path -Name "BingSearchEnabled" -Value 0 -Type DWord -Force</div>
+      <div class="code-block" id="script"># Disable Bing search in Start menu
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Value 0 -Type DWord -Force</div>
       <button class="copy-btn" onclick="copyScript(this)">copy</button>
     </div>
   </div>
@@ -93,21 +92,13 @@ Set-ItemProperty -Path $path -Name "BingSearchEnabled" -Value 0 -Type DWord -For
       <span class="settings-key">Run this script using the logged on credentials</span>
       <span class="badge badge-yes">Yes</span>
     </div>
-    <div class="settings-row">
-      <span class="settings-key">Enforce script signature check</span>
-      <span class="badge badge-no">No</span>
-    </div>
-    <div class="settings-row">
-      <span class="settings-key">Run script in 64 bit PowerShell Host</span>
-      <span class="badge badge-yes">Yes</span>
-    </div>
   </div>
 
 </div>
 
 <footer>
   <span>GoGuppy · GuppysPowershellCheatSheet</span>
-  <a href="https://github.com/GoGuppy/GuppysPowershellCheatSheet" target="_blank">github.com/GoGuppy/GuppysPowershellCheatSheet</a>
+  
 </footer>
 
 <script>
