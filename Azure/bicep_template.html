@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy Bicep Template · Azure · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
+  header { background: #0d1117; border-bottom: 1px solid #21262d; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box { background: #58a6ff; color: #0d1117; font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 32px 0; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 16px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
+  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #e3b341; line-height: 1.6; }
+  .warning-box strong { color: #f0c040; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 11.5px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key    { background: #0d2341; color: #58a6ff; }
+  .tag-slow   { background: #2b1d04; color: #d29922; }
+  .tag-fire   { background: #2b0d0d; color: #f85149; }
+  .tag-warn   { background: #2b1d04; color: #e3b341; }
+  .tag-net    { background: #1a1230; color: #bc8cff; }
+  .tag-info   { background: #0d2626; color: #39c5cf; }
+  footer { max-width: 860px; margin: 48px auto 0; padding: 20px 32px 0; border-top: 1px solid #21262d; font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Azure</a>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Deploy Bicep Template</div>
+  <h1>🦾 Deploy Bicep Template</h1>
+  <div class="subtitle">Az PowerShell Module · AZ-104 · Author, compile, deploy, and preview Bicep templates</div>
+
+  <div class="warning-box">
+    <strong>Don't be stupid!!!</strong> Bicep is a cleaner abstraction over ARM — it compiles down to ARM JSON before deploying. You need the Bicep CLI installed separately from the Az module. Always run What-If before hitting production. Delete the resource group when done to stop billing.
+  </div>
+
+  <div id="root"></div>
+</div>
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+</footer>
+
+<script>
+const steps = [
+  {
+    n:"1", title:"Connect to Azure", tag:"key",
+    desc:"Authenticate to your Azure subscription.",
+    code:`Connect-AzAccount`
+  },
+  {
+    n:"2", title:"Install Bicep CLI", tag:"key",
+    desc:"Bicep CLI is separate from the Az PowerShell module. Only needs to be done once.",
+    code:`winget install -e --id Microsoft.Bicep`
+  },
+  {
+    n:"3", title:"Verify Bicep Version", tag:"info",
+    desc:"Confirm the CLI is installed and check the version.",
+    code:`bicep --version`
+  },
+  {
+    n:"4", title:"Create a Resource Group", tag:"key",
+    desc:"Container for everything this template deploys.",
+    code:`New-AzResourceGroup -Name "MyRG" -Location "westus2"`
+  },
+  {
+    n:"5", title:"Create a Basic Bicep File", tag:"key",
+    desc:"This example deploys a Storage Account. Save it as main.bicep. Bicep is much cleaner than raw ARM JSON — no $schema, no apiVersion clutter at the top level.",
+    code:`@'
+param storageName string
+param location string = resourceGroup().location
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: storageName
+  location: location
+  sku: { name: 'Standard_LRS' }
+  kind: 'StorageV2'
+}
+'@ | Out-File -FilePath "main.bicep" -Encoding utf8`
+  },
+  {
+    n:"6", title:"Compile Bicep to ARM JSON (Optional)", tag:"info",
+    desc:"Converts your .bicep file to ARM JSON. Useful for review or sharing with teams that don't use Bicep.",
+    code:`bicep build main.bicep`
+  },
+  {
+    n:"7", title:"Preview Deployment with What-If", tag:"warn",
+    desc:"Dry run — shows what will be created, changed, or deleted. Nothing is deployed. Always run this first.",
+    code:`New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "main.bicep" \`
+  -storageName "mystorageacct001" \`
+  -WhatIf`
+  },
+  {
+    n:"8", title:"Deploy the Bicep Template", tag:"key",
+    desc:"Deploys the template to the resource group. Bicep compiles to ARM automatically on the fly.",
+    code:`New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "main.bicep" \`
+  -storageName "mystorageacct001" \`
+  -Verbose`
+  },
+  {
+    n:"9", title:"Deploy Using a Parameters File", tag:"info",
+    desc:"Use a .bicepparam file to keep values separate from your template. Cleaner for automation and source control.",
+    code:`@'
+using 'main.bicep'
+
+param storageName = 'mystorageacct001'
+'@ | Out-File -FilePath "main.bicepparam" -Encoding utf8
+
+New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "main.bicep" \`
+  -TemplateParameterFile "main.bicepparam"`
+  },
+  {
+    n:"10", title:"Check Deployment Status", tag:"info",
+    desc:"List all deployments in the resource group and their provisioning state.",
+    code:`Get-AzResourceGroupDeployment -ResourceGroupName "MyRG" | Select-Object DeploymentName, ProvisioningState, Timestamp`
+  },
+  {
+    n:"11", title:"Decompile ARM JSON to Bicep", tag:"info",
+    desc:"Convert an existing ARM template back to Bicep. Output isn't always perfect but gives you a solid starting point.",
+    code:`bicep decompile azuredeploy.json`
+  },
+  {
+    n:"12", title:"Delete the Resource Group", tag:"fire",
+    desc:"Nukes everything in the group. Stops all billing.",
+    code:`Remove-AzResourceGroup -Name "MyRG" -Force`
+  },
+];
+
+const tagMap = {
+  key:  { label:"required",    cls:"tag-key"  },
+  slow: { label:"slow",        cls:"tag-slow" },
+  fire: { label:"destructive", cls:"tag-fire" },
+  warn: { label:"caution",     cls:"tag-warn" },
+  net:  { label:"networking",  cls:"tag-net"  },
+  info: { label:"info",        cls:"tag-info" },
+};
+
+const sectionBreaks = {
+  "1":  "Setup",
+  "4":  "Resource Group",
+  "5":  "Author",
+  "6":  "Compile",
+  "7":  "Preview",
+  "8":  "Deploy",
+  "10": "Inspect",
+  "11": "Utilities",
+  "12": "Teardown",
+};
+
+const root = document.getElementById('root');
+let currentSection = null;
+
+steps.forEach(s => {
+  if (sectionBreaks[s.n] && sectionBreaks[s.n] !== currentSection) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sectionBreaks[s.n];
+    root.appendChild(lbl);
+    currentSection = sectionBreaks[s.n];
+  }
+
+  const tagHTML = s.tag && tagMap[s.tag]
+    ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
+
+  const escaped = s.code
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">${s.n}</div>
+      <div class="card-info">
+        <div class="card-title">${s.title} ${tagHTML}</div>
+        <div class="card-desc">${s.desc}</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${escaped}</div>
+      <button class="copy-btn">copy</button>
+    </div>`;
+
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(s.code).then(() => {
+      this.textContent = '✓ copied';
+      this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+
+  root.appendChild(card);
+});
+</script>
+</body>
+</html>
