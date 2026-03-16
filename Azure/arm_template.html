@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy ARM Template · Azure · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
+  header { background: #0d1117; border-bottom: 1px solid #21262d; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box { background: #58a6ff; color: #0d1117; font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 32px 0; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 16px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
+  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #e3b341; line-height: 1.6; }
+  .warning-box strong { color: #f0c040; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 11.5px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key    { background: #0d2341; color: #58a6ff; }
+  .tag-slow   { background: #2b1d04; color: #d29922; }
+  .tag-fire   { background: #2b0d0d; color: #f85149; }
+  .tag-warn   { background: #2b1d04; color: #e3b341; }
+  .tag-net    { background: #1a1230; color: #bc8cff; }
+  .tag-info   { background: #0d2626; color: #39c5cf; }
+  footer { max-width: 860px; margin: 48px auto 0; padding: 20px 32px 0; border-top: 1px solid #21262d; font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Azure</a>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Deploy ARM Template</div>
+  <h1>📄 Deploy ARM Template</h1>
+  <div class="subtitle">Az PowerShell Module · AZ-104 · Author, deploy, preview, and export ARM templates</div>
+
+  <div class="warning-box">
+    <strong>Don't be stupid!!!</strong> Always run What-If before deploying to production. ARM templates are idempotent — redeploying the same template is safe, but changing parameters on an existing resource can cause downtime or data loss. Delete the resource group when done to stop billing.
+  </div>
+
+  <div id="root"></div>
+</div>
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+</footer>
+
+<script>
+const steps = [
+  {
+    n:"1", title:"Connect to Azure", tag:"key",
+    desc:"Authenticate to your Azure subscription.",
+    code:`Connect-AzAccount`
+  },
+  {
+    n:"2", title:"Create a Resource Group", tag:"key",
+    desc:"Container for everything this template deploys.",
+    code:`New-AzResourceGroup -Name "MyRG" -Location "westus2"`
+  },
+  {
+    n:"3", title:"Create a Basic ARM Template File", tag:"key",
+    desc:"This example template deploys a Storage Account. Save it as azuredeploy.json. The parameters block makes it reusable — swap the storageName value each time.",
+    code:`$template = @'
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageName": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 24
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storageName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "Standard_LRS" },
+      "kind": "StorageV2"
+    }
+  ]
+}
+'@
+$template | Out-File -FilePath "azuredeploy.json" -Encoding utf8`
+  },
+  {
+    n:"4", title:"Preview Deployment with What-If", tag:"warn",
+    desc:"Dry run — shows exactly what will be created, changed, or deleted. No resources are touched. Always do this first.",
+    code:`New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "azuredeploy.json" \`
+  -storageName "mystorageacct001" \`
+  -WhatIf`
+  },
+  {
+    n:"5", title:"Deploy the ARM Template", tag:"key",
+    desc:"Deploys the template to the resource group. ARM is idempotent — safe to run multiple times.",
+    code:`New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "azuredeploy.json" \`
+  -storageName "mystorageacct001" \`
+  -Verbose`
+  },
+  {
+    n:"6", title:"Deploy Using a Parameters File", tag:"info",
+    desc:"Use a separate azuredeploy.parameters.json to keep param values out of your command. Cleaner for automation and git.",
+    code:`# azuredeploy.parameters.json
+$params = @'
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageName": { "value": "mystorageacct001" }
+  }
+}
+'@
+$params | Out-File -FilePath "azuredeploy.parameters.json" -Encoding utf8
+
+# Deploy with the parameters file
+New-AzResourceGroupDeployment \`
+  -ResourceGroupName "MyRG" \`
+  -TemplateFile "azuredeploy.json" \`
+  -TemplateParameterFile "azuredeploy.parameters.json"`
+  },
+  {
+    n:"7", title:"Check Deployment Status", tag:"info",
+    desc:"List all deployments in the resource group and their status.",
+    code:`Get-AzResourceGroupDeployment -ResourceGroupName "MyRG" | Select-Object DeploymentName, ProvisioningState, Timestamp`
+  },
+  {
+    n:"8", title:"Get Deployment Details", tag:"info",
+    desc:"Drill into a specific deployment to see inputs, outputs, and any errors.",
+    code:`Get-AzResourceGroupDeployment -ResourceGroupName "MyRG" -DeploymentName "azuredeploy"`
+  },
+  {
+    n:"9", title:"Export Existing Resource as ARM Template", tag:"info",
+    desc:"Reverse-engineer an already-deployed resource into a reusable ARM template. Great starting point for templating existing infra.",
+    code:`Export-AzResourceGroup \`
+  -ResourceGroupName "MyRG" \`
+  -Path "exported-template.json"`
+  },
+  {
+    n:"10", title:"Deploy at Subscription Scope (Optional)", tag:"net",
+    desc:"For templates that create resource groups or deploy across multiple RGs. Uses New-AzDeployment instead of New-AzResourceGroupDeployment.",
+    code:`New-AzDeployment \`
+  -Location "westus2" \`
+  -TemplateFile "subscription-level-template.json" \`
+  -WhatIf`
+  },
+  {
+    n:"11", title:"Delete the Resource Group", tag:"fire",
+    desc:"Nukes everything in the group. Stops all billing.",
+    code:`Remove-AzResourceGroup -Name "MyRG" -Force`
+  },
+];
+
+const tagMap = {
+  key:  { label:"required",    cls:"tag-key"  },
+  slow: { label:"slow",        cls:"tag-slow" },
+  fire: { label:"destructive", cls:"tag-fire" },
+  warn: { label:"caution",     cls:"tag-warn" },
+  net:  { label:"networking",  cls:"tag-net"  },
+  info: { label:"info",        cls:"tag-info" },
+};
+
+const sectionBreaks = {
+  "1":  "Setup",
+  "3":  "Author",
+  "4":  "Preview",
+  "5":  "Deploy",
+  "7":  "Inspect",
+  "9":  "Export",
+  "11": "Teardown",
+};
+
+const root = document.getElementById('root');
+let currentSection = null;
+
+steps.forEach(s => {
+  if (sectionBreaks[s.n] && sectionBreaks[s.n] !== currentSection) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sectionBreaks[s.n];
+    root.appendChild(lbl);
+    currentSection = sectionBreaks[s.n];
+  }
+
+  const tagHTML = s.tag && tagMap[s.tag]
+    ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
+
+  const escaped = s.code
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">${s.n}</div>
+      <div class="card-info">
+        <div class="card-title">${s.title} ${tagHTML}</div>
+        <div class="card-desc">${s.desc}</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${escaped}</div>
+      <button class="copy-btn">copy</button>
+    </div>`;
+
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(s.code).then(() => {
+      this.textContent = '✓ copied';
+      this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+
+  root.appendChild(card);
+});
+</script>
+</body>
+</html>
