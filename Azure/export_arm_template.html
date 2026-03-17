@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Export Resource as ARM Template · Azure · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
+  header { background: #0d1117; border-bottom: 1px solid #21262d; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box { background: #58a6ff; color: #0d1117; font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 32px 0; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 16px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
+  .warning-box { background: #0d2241; border: 1px solid #1f6feb; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #79c0ff; line-height: 1.6; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 11.5px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key    { background: #0d2341; color: #58a6ff; }
+  .tag-slow   { background: #2b1d04; color: #d29922; }
+  .tag-fire   { background: #2b0d0d; color: #f85149; }
+  .tag-warn   { background: #2b1d04; color: #e3b341; }
+  .tag-net    { background: #1a1230; color: #bc8cff; }
+  .tag-info   { background: #0d2626; color: #39c5cf; }
+  footer { max-width: 860px; margin: 48px auto 0; padding: 20px 32px 0; border-top: 1px solid #21262d; font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Azure</a>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Export Resource as ARM Template</div>
+  <h1>📤 Export Resource as ARM Template</h1>
+  <div class="subtitle">Az PowerShell Module · AZ-104 · Export resources, resource groups, and deployment templates as reusable ARM JSON</div>
+
+  <div class="warning-box">
+    Exported templates are a snapshot — they don't always perfectly represent every resource property and may need cleanup before redeployment. Not all resource types support export. Use deployment history export (steps 8–10) when you want the original template used to deploy, not a reverse-engineered one.
+  </div>
+
+  <div id="root"></div>
+</div>
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+</footer>
+
+<script>
+const steps = [
+  // ── Setup ─────────────────────────────────────────────────────────────────
+  {
+    n:"1", title:"Connect to Azure", tag:"key",
+    desc:"Authenticate before running any Az commands.",
+    code:`Connect-AzAccount`
+  },
+
+  // ── Export Resource Group ─────────────────────────────────────────────────
+  {
+    n:"2", title:"Export Entire Resource Group to JSON", tag:"key",
+    desc:"Exports every resource in the group as a single ARM template file.",
+    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -Force`
+  },
+  {
+    n:"3", title:"Export with Parameter Default Values", tag:"key",
+    desc:"Includes current values as defaults in the parameters block — useful for redeployment.",
+    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -IncludeParameterDefaultValue -Force`
+  },
+  {
+    n:"4", title:"Export and Skip Resource Name Parameterization", tag:"info",
+    desc:"Hardcodes resource names instead of turning them into parameters. Simpler output.",
+    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -SkipResourceNameParameterization -Force`
+  },
+
+  // ── Export Specific Resources ─────────────────────────────────────────────
+  {
+    n:"5", title:"List Resource IDs in a Resource Group", tag:"info",
+    desc:"Get the resource IDs you need before filtering an export.",
+    code:`Get-AzResource -ResourceGroupName "myrg" | Select-Object Name, ResourceType, ResourceId`
+  },
+  {
+    n:"6", title:"Export a Specific Resource by Name", tag:"key",
+    desc:"Looks up the resource ID by name and pipes it straight into the export. Swap the Name and ResourceType for your target resource.",
+    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\vm-export.json" -Force`
+  },
+
+  // ── Deployment History ────────────────────────────────────────────────────
+  {
+    n:"7", title:"List All Deployments in a Resource Group", tag:"info",
+    desc:"Shows deployment names, state, and timestamps. You need the name for steps 8–9.",
+    code:`Get-AzResourceGroupDeployment -ResourceGroupName "myrg" | Select-Object DeploymentName, ProvisioningState, Timestamp | Sort-Object Timestamp -Descending`
+  },
+  {
+    n:"8", title:"Get Details of a Specific Deployment", tag:"info",
+    desc:"Shows parameters, outputs, and mode for one deployment.",
+    code:`Get-AzResourceGroupDeployment -ResourceGroupName "myrg" -DeploymentName "mydeployment"`
+  },
+  {
+    n:"9", title:"Export a Deployment's Original Template", tag:"key",
+    desc:"Retrieves the exact template submitted at deploy time — cleaner than a resource group export.",
+    code:`Save-AzResourceGroupDeploymentTemplate -ResourceGroupName "myrg" -DeploymentName "mydeployment" -Path "C:\\temp\\deployment-template.json" -Force`
+  },
+
+  // ── Inspect ───────────────────────────────────────────────────────────────
+  {
+    n:"10", title:"View Exported JSON in Terminal", tag:"info",
+    desc:"Pretty-prints the exported file directly in the terminal.",
+    code:`Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json | ConvertTo-Json -Depth 100`
+  },
+  {
+    n:"11", title:"Count Resources in Exported Template", tag:"info",
+    desc:"Quick sanity check — confirms how many resources were captured.",
+    code:`(Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json).resources.Count`
+  },
+  {
+    n:"12", title:"List Resource Types in Exported Template", tag:"info",
+    desc:"Shows every resource type included in the exported file.",
+    code:`(Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json).resources | Select-Object -ExpandProperty type | Sort-Object -Unique`
+  },
+
+  // ── Export to Bicep ───────────────────────────────────────────────────────
+  {
+    n:"13", title:"Install the Bicep CLI", tag:"key",
+    desc:"Az PowerShell has no native Bicep export — you need the Bicep CLI to decompile. Run once.",
+    code:`winget install Microsoft.Bicep`
+  },
+  {
+    n:"14", title:"Verify Bicep CLI is Installed", tag:"info",
+    desc:"Confirms the version and that the CLI is on your PATH.",
+    code:`bicep --version`
+  },
+  {
+    n:"15", title:"Decompile ARM JSON to Bicep", tag:"key",
+    desc:"Converts any exported ARM JSON file into a .bicep file in the same directory. Run after any export step.",
+    code:`bicep decompile "C:\\temp\\rg-export.json"`
+  },
+  {
+    n:"16", title:"View the Decompiled Bicep File", tag:"info",
+    desc:"Prints the .bicep output to the terminal. The file is saved alongside the original JSON.",
+    code:`Get-Content "C:\\temp\\rg-export.bicep"`
+  },
+];
+
+const tagMap = {
+  key:  { label:"required",    cls:"tag-key"  },
+  slow: { label:"slow",        cls:"tag-slow" },
+  fire: { label:"destructive", cls:"tag-fire" },
+  warn: { label:"caution",     cls:"tag-warn" },
+  net:  { label:"networking",  cls:"tag-net"  },
+  info: { label:"info",        cls:"tag-info" },
+};
+
+const sectionBreaks = {
+  "1":  "Setup",
+  "2":  "Export Resource Group",
+  "5":  "Export Specific Resources",
+  "7":  "Deployment History",
+  "10": "Inspect",
+  "13": "Export to Bicep",
+};
+
+const root = document.getElementById('root');
+let currentSection = null;
+
+steps.forEach(s => {
+  if (sectionBreaks[s.n] && sectionBreaks[s.n] !== currentSection) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sectionBreaks[s.n];
+    root.appendChild(lbl);
+    currentSection = sectionBreaks[s.n];
+  }
+
+  const tagHTML = s.tag && tagMap[s.tag]
+    ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
+
+  const renderedCode = s.codeHtml
+    ? s.codeHtml
+    : s.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const copyText = s.codePlain || s.code || '';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">${s.n}</div>
+      <div class="card-info">
+        <div class="card-title">${s.title} ${tagHTML}</div>
+        <div class="card-desc">${s.desc}</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${renderedCode}</div>
+      <button class="copy-btn">copy</button>
+    </div>`;
+
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(copyText).then(() => {
+      this.textContent = '✓ copied';
+      this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+
+  root.appendChild(card);
+});
+</script>
+</body>
+</html>
