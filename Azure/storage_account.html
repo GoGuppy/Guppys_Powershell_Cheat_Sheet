@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Storage Account · Azure · Guppy's PS Cheat Sheets</title>
+<title>Storage Accounts · Azure · Guppy's PS Cheat Sheets</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
@@ -20,8 +20,8 @@
   .breadcrumb a:hover { text-decoration: underline; }
   h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
   .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
-  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #e3b341; line-height: 1.6; }
-  .warning-box strong { color: #f0c040; }
+  .warning-box { background: #0d2241; border: 1px solid #1f6feb; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #79c0ff; line-height: 1.6; }
+  .warning-box strong { color: #a5d3ff; }
   .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
   .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
   .card:hover { border-color: #30363d; }
@@ -57,12 +57,12 @@
 </header>
 
 <div class="wrap">
-  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Create Storage Account</div>
-  <h1>🗄️ Azure Storage Account</h1>
-  <div class="subtitle">Az PowerShell Module · AZ-104 · Create, configure, inspect, and delete a storage account</div>
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Storage Accounts</div>
+  <h1>🗄️ Storage Accounts</h1>
+  <div class="subtitle">Az PowerShell Module · AZ-104 · Blob storage, containers, keys, access tiers, and lifecycle</div>
 
   <div class="warning-box">
-    <strong>Don't be stupid!!!</strong> Storage account names must be globally unique, 3–24 chars, lowercase letters and numbers only. LRS = local redundant (cheapest). GRS = geo-redundant (survives regional outage). StorageV2 is the recommended Kind for most workloads. Delete the resource group when done to stop billing.
+    <strong>Storage account names</strong> must be globally unique, 3–24 characters, lowercase letters and numbers only. SKU controls replication: Standard_LRS (cheapest, local), Standard_GRS (geo-redundant), Standard_ZRS (zone), Premium_LRS (SSDs). Kind <strong>StorageV2</strong> is the current default — use it unless you have a specific reason not to.
   </div>
 
   <div id="root"></div>
@@ -70,66 +70,162 @@
 
 <footer>
   <span>GoGuppy · GuppysPowershellCheatSheet</span>
-  
 </footer>
 
 <script>
 const steps = [
+  // ── Setup ─────────────────────────────────────────────────────────────────
   {
     n:"1", title:"Connect to Azure", tag:"key",
-    desc:"Authenticate to your Azure subscription.",
+    desc:"Authenticate before running any Az commands.",
     code:`Connect-AzAccount`
   },
   {
     n:"2", title:"Create a Resource Group", tag:"key",
-    desc:"Container for all resources in this deployment.",
-    code:`New-AzResourceGroup -Name "MyRG" -Location "eastus"`
+    desc:"All storage resources live inside a resource group.",
+    code:`New-AzResourceGroup -Name "rg-storage-demo" -Location "westus2"`
   },
+
+  // ── Create ────────────────────────────────────────────────────────────────
   {
     n:"3", title:"Create a Storage Account", tag:"key",
-    desc:"StorageV2 + LRS is the standard general-purpose choice. Swap LRS for GRS if you need geo-redundancy.",
-    code:`New-AzStorageAccount -ResourceGroupName "MyRG" -Name "mystorageacct001" -Location "eastus" -SkuName "Standard_LRS" -Kind "StorageV2"`
+    desc:"Pick one SKU — delete the other lines. Each line is a complete, ready-to-run command.",
+    codeHtml:
+      `<span style="color:#484f58"># ── pick one, delete the rest ───────────────────────────────────────────────────</span>\n` +
+      `<span style="color:#58a6ff">New-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_LRS"  -Kind "StorageV2"        </span><span style="color:#484f58"> # local · 3 copies, same datacenter · cheapest</span>\n` +
+      `<span style="color:#3fb950">New-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_GRS"  -Kind "StorageV2"        </span><span style="color:#484f58"> # geo  · replicates to paired region</span>\n` +
+      `<span style="color:#d29922">New-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_ZRS"  -Kind "StorageV2"        </span><span style="color:#484f58"> # zone · spread across 3 availability zones</span>\n` +
+      `<span style="color:#bc8cff">New-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Premium_LRS"   -Kind "BlockBlobStorage" </span><span style="color:#484f58"> # premium block blob · SSD-backed, low latency</span>`,
+    codePlain:
+      `# pick one — delete the others\nNew-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_LRS"  -Kind "StorageV2"\nNew-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_GRS"  -Kind "StorageV2"\nNew-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Standard_ZRS"  -Kind "StorageV2"\nNew-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Location "westus2" -SkuName "Premium_LRS"   -Kind "BlockBlobStorage"`
+  },
+
+  // ── Inspect ───────────────────────────────────────────────────────────────
+  {
+    n:"4", title:"Get Storage Account Details", tag:"info",
+    desc:"Shows kind, SKU, primary endpoint, access tier, and status.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object StorageAccountName, Kind, SkuName, AccessTier, PrimaryLocation, StatusOfPrimary`
   },
   {
-    n:"4", title:"List All Storage Accounts in a Resource Group", tag:"info",
-    desc:"Quick check to confirm the account was created.",
-    code:`Get-AzStorageAccount -ResourceGroupName "MyRG"`
+    n:"5", title:"List All Storage Accounts in a Resource Group", tag:"info",
+    desc:"Quick inventory of every account in the group.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" | Select-Object StorageAccountName, Kind, SkuName, Location`
   },
   {
-    n:"5", title:"Get Storage Account Keys", tag:"key",
-    desc:"You need a key to create a storage context for blob/file operations.",
-    code:`Get-AzStorageAccountKey -ResourceGroupName "MyRG" -Name "mystorageacct001"`
+    n:"6", title:"Get Storage Account Keys", tag:"info",
+    desc:"Returns Key1 and Key2. Treat these like passwords — full access to everything.",
+    code:`Get-AzStorageAccountKey -ResourceGroupName "rg-storage-demo" -Name "guppystorage01"`
   },
   {
-    n:"6", title:"Create a Storage Context", tag:"key",
-    desc:"A context object holds the account name + key — required for most storage operations.",
-    code:`$key = (Get-AzStorageAccountKey -ResourceGroupName "MyRG" -Name "mystorageacct001")[0].Value
-$ctx = New-AzStorageContext -StorageAccountName "mystorageacct001" -StorageAccountKey $key`
+    n:"7", title:"Get the Primary Connection String", tag:"info",
+    desc:"Full connection string for apps, SDKs, and Storage Explorer.",
+    code:`(Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01").Context.ConnectionString`
   },
   {
-    n:"7", title:"Enable Blob Public Access (Optional)", tag:"warn",
-    desc:"Off by default since 2021. Only enable if you intentionally need public anonymous blob reads.",
-    code:`Set-AzStorageAccount -ResourceGroupName "MyRG" -Name "mystorageacct001" -AllowBlobPublicAccess $true`
+    n:"8", title:"Get a Storage Context Object", tag:"info",
+    desc:"Pipe this into container and blob commands instead of storing in a variable.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context`
+  },
+
+  // ── Containers ────────────────────────────────────────────────────────────
+  {
+    n:"9", title:"Create a Blob Container", tag:"key",
+    desc:"Pick an access level — delete the other lines. Off = no public access (default). Blob = anyone reads by URL. Container = full public listing.",
+    codeHtml:
+      `<span style="color:#484f58"># ── pick one, delete the rest ───────────────────────────────────────────────────</span>\n` +
+      `<span style="color:#58a6ff">Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Off       </span><span style="color:#484f58"> # private · no public access · most secure</span>\n` +
+      `<span style="color:#3fb950">Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Blob      </span><span style="color:#484f58"> # public blob · read blobs by URL, listing requires auth</span>\n` +
+      `<span style="color:#d29922">Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Container </span><span style="color:#484f58"> # public container · full anonymous listing + read</span>`,
+    codePlain:
+      `# pick one — delete the others\nGet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Off\nGet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Blob\nGet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | New-AzStorageContainer -Name "my-container" -Permission Container`
   },
   {
-    n:"8", title:"Rotate a Storage Account Key", tag:"warn",
-    desc:"Regenerates key1 or key2. Existing connections using the old key will break immediately.",
-    code:`New-AzStorageAccountKey -ResourceGroupName "MyRG" -Name "mystorageacct001" -KeyName "key1"`
+    n:"10", title:"List All Containers", tag:"info",
+    desc:"Shows every container in the storage account.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Get-AzStorageContainer`
   },
   {
-    n:"9", title:"Get Storage Account Details", tag:"info",
-    desc:"Check SKU, replication, and primary endpoints.",
-    code:`Get-AzStorageAccount -ResourceGroupName "MyRG" -Name "mystorageacct001" | Select-Object StorageAccountName, Sku, Kind, PrimaryEndpoints`
+    n:"11", title:"Get Container Properties", tag:"info",
+    desc:"Shows access level, lease status, and last modified.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Get-AzStorageContainer -Name "my-container"`
+  },
+
+  // ── Blobs ─────────────────────────────────────────────────────────────────
+  {
+    n:"12", title:"Upload a File to a Container", tag:"key",
+    desc:"Uploads a local file as a block blob. Change the path to your actual file.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Set-AzStorageBlobContent -Container "my-container" -File "C:\temp\test.txt" -Blob "test.txt"`
   },
   {
-    n:"10", title:"Delete Storage Account", tag:"fire",
-    desc:"Permanently deletes the account and ALL data inside. No undo.",
-    code:`Remove-AzStorageAccount -ResourceGroupName "MyRG" -Name "mystorageacct001" -Force`
+    n:"13", title:"List All Blobs in a Container", tag:"info",
+    desc:"Returns blob names, sizes, and last modified timestamps.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Get-AzStorageBlob -Container "my-container"`
   },
   {
-    n:"11", title:"Delete the Resource Group", tag:"fire",
-    desc:"Nukes everything in the group. Stops all billing.",
-    code:`Remove-AzResourceGroup -Name "MyRG" -Force`
+    n:"14", title:"Get a Single Blob's Properties", tag:"info",
+    desc:"Shows content type, size, ETag, and access tier for one blob.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Get-AzStorageBlob -Container "my-container" -Blob "test.txt"`
+  },
+  {
+    n:"15", title:"Download a Blob", tag:"info",
+    desc:"Downloads to a local path. Creates the file if it doesn't exist.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Get-AzStorageBlobContent -Container "my-container" -Blob "test.txt" -Destination "C:\temp\downloaded.txt"`
+  },
+  {
+    n:"16", title:"Copy a Blob Between Containers", tag:"info",
+    desc:"Server-side copy — no download required. Both containers must be in the same account.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Start-AzStorageBlobCopy -SrcContainer "my-container" -SrcBlob "test.txt" -DestContainer "public-blobs" -DestBlob "test-copy.txt"`
+  },
+  {
+    n:"17", title:"Delete a Blob", tag:"fire",
+    desc:"Permanently removes the blob. No confirmation prompt.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Remove-AzStorageBlob -Container "my-container" -Blob "test.txt"`
+  },
+
+  // ── Access & Keys ─────────────────────────────────────────────────────────
+  {
+    n:"18", title:"Rotate Storage Account Key1", tag:"warn",
+    desc:"Generates a new Key1. Any app using the old key loses access immediately.",
+    code:`New-AzStorageAccountKey -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -KeyName "key1"`
+  },
+  {
+    n:"19", title:"Change Storage Account Access Tier", tag:"info",
+    desc:"Pick a tier — delete the other lines. Hot = frequent access. Cool = infrequent. Cold = rare. Archive = offline only, cheapest storage, slowest retrieval.",
+    codeHtml:
+      `<span style="color:#484f58"># ── pick one, delete the rest ───────────────────────────────────────────────────</span>\n` +
+      `<span style="color:#f85149">Set-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Hot"    </span><span style="color:#484f58"> # hot     · frequent access · highest storage cost · lowest read cost</span>\n` +
+      `<span style="color:#58a6ff">Set-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Cool"   </span><span style="color:#484f58"> # cool    · infrequent access · lower storage cost · higher read cost</span>\n` +
+      `<span style="color:#d29922">Set-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Cold"   </span><span style="color:#484f58"> # cold    · rarely accessed · even cheaper storage · retrieval fees apply</span>\n` +
+      `<span style="color:#6e7681">Set-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Archive"</span><span style="color:#484f58"> # archive · offline storage · cheapest · hours to rehydrate before access</span>`,
+    codePlain:
+      `# pick one — delete the others\nSet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Hot"\nSet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Cool"\nSet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Cold"\nSet-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AccessTier "Archive"`
+  },
+  {
+    n:"20", title:"Enable Blob Soft Delete (7-day retention)", tag:"warn",
+    desc:"Deleted blobs recoverable for 7 days. Strongly recommended for production.",
+    code:`Enable-AzStorageBlobDeleteRetentionPolicy -ResourceGroupName "rg-storage-demo" -StorageAccountName "guppystorage01" -RetentionDays 7`
+  },
+  {
+    n:"21", title:"Disable Public Blob Access on the Account", tag:"warn",
+    desc:"Overrides all container permissions — no public access regardless of container setting.",
+    code:`Set-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -AllowBlobPublicAccess $false`
+  },
+
+  // ── Teardown ──────────────────────────────────────────────────────────────
+  {
+    n:"22", title:"Delete a Blob Container", tag:"fire",
+    desc:"Deletes the container and every blob inside it. Irreversible.",
+    code:`Get-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" | Select-Object -ExpandProperty Context | Remove-AzStorageContainer -Name "my-container" -Force`
+  },
+  {
+    n:"23", title:"Delete a Storage Account", tag:"fire",
+    desc:"Removes the account and all data permanently. No recycle bin.",
+    code:`Remove-AzStorageAccount -ResourceGroupName "rg-storage-demo" -Name "guppystorage01" -Force`
+  },
+  {
+    n:"24", title:"Delete the Resource Group", tag:"fire",
+    desc:"Nukes the resource group and everything in it — all accounts, containers, blobs.",
+    code:`Remove-AzResourceGroup -Name "rg-storage-demo" -Force`
   },
 ];
 
@@ -146,8 +242,10 @@ const sectionBreaks = {
   "1":  "Setup",
   "3":  "Create",
   "4":  "Inspect",
-  "7":  "Configure",
-  "10": "Teardown",
+  "9":  "Containers",
+  "12": "Blobs",
+  "18": "Access & Keys",
+  "22": "Teardown",
 };
 
 const root = document.getElementById('root');
@@ -165,8 +263,12 @@ steps.forEach(s => {
   const tagHTML = s.tag && tagMap[s.tag]
     ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
 
-  const escaped = s.code
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Use codeHtml if present (colored multi-option step), else escape plain code
+  const renderedCode = s.codeHtml
+    ? s.codeHtml
+    : s.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const copyText = s.codePlain || s.code || '';
 
   const card = document.createElement('div');
   card.className = 'card';
@@ -179,12 +281,12 @@ steps.forEach(s => {
       </div>
     </div>
     <div class="code-wrap">
-      <div class="code-block">${escaped}</div>
+      <div class="code-block">${renderedCode}</div>
       <button class="copy-btn">copy</button>
     </div>`;
 
   card.querySelector('.copy-btn').addEventListener('click', function() {
-    navigator.clipboard.writeText(s.code).then(() => {
+    navigator.clipboard.writeText(copyText).then(() => {
       this.textContent = '✓ copied';
       this.classList.add('done');
       setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
