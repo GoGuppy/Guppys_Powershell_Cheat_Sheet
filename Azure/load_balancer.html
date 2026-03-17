@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Balancer · Azure · Guppy's PS Cheat Sheets</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 60px; min-height: 100vh; }
+  header { background: #0d1117; border-bottom: 1px solid #21262d; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-box { background: #58a6ff; color: #0d1117; font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: 'Consolas', monospace; font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .logo-name span { color: #58a6ff; }
+  .back { font-family: 'Consolas', monospace; font-size: 11px; color: #58a6ff; text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 32px 0; }
+  .breadcrumb { font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; margin-bottom: 16px; }
+  .breadcrumb a { color: #58a6ff; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6e7681; margin-bottom: 24px; }
+  .warning-box { background: #2b1d04; border: 1px solid #d29922; border-radius: 8px; padding: 10px 14px; margin-bottom: 24px; font-size: 12px; color: #e3b341; line-height: 1.6; }
+  .warning-box strong { color: #f0c040; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #484f58; margin: 28px 0 8px 2px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin-bottom: 7px; overflow: hidden; transition: border-color .15s; }
+  .card:hover { border-color: #30363d; }
+  .card-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px; }
+  .step { min-width: 22px; height: 22px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #6e7681; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-title { font-size: 13px; font-weight: 500; color: #e6edf3; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .card-desc { font-size: 11px; color: #6e7681; margin-top: 2px; line-height: 1.4; }
+  .code-wrap { position: relative; margin: 0 12px 10px 44px; }
+  .code-block { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px 44px 8px 10px; font-family: 'Cascadia Code','Fira Code','Consolas',monospace; font-size: 11.5px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 6px; right: 6px; background: #21262d; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; font-size: 10px; padding: 3px 8px; cursor: pointer; font-family: inherit; transition: background .1s, color .1s; }
+  .copy-btn:hover { background: #30363d; color: #e6edf3; }
+  .copy-btn.done { background: #0d2b17; color: #3fb950; border-color: #1a4226; }
+  .tag { font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 999px; }
+  .tag-key    { background: #0d2341; color: #58a6ff; }
+  .tag-slow   { background: #2b1d04; color: #d29922; }
+  .tag-fire   { background: #2b0d0d; color: #f85149; }
+  .tag-warn   { background: #2b1d04; color: #e3b341; }
+  .tag-net    { background: #1a1230; color: #bc8cff; }
+  .tag-info   { background: #0d2626; color: #39c5cf; }
+  footer { max-width: 860px; margin: 48px auto 0; padding: 20px 32px 0; border-top: 1px solid #21262d; font-family: 'Consolas', monospace; font-size: 11px; color: #484f58; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  footer a { color: #58a6ff; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html">
+    <div class="logo-box">PS</div>
+    <div class="logo-name">Guppy's<span>PowerShell</span>CheatSheet</div>
+  </a>
+  <a class="back" href="index.html">← Azure</a>
+</header>
+
+<div class="wrap">
+  <div class="breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Azure</a> › Load Balancer</div>
+  <h1>⚖️ Azure Load Balancer</h1>
+  <div class="subtitle">Az PowerShell Module · AZ-700 · Deploy a public load balancer with a backend pool, health probe, and load balancing rule</div>
+
+  <div class="warning-box">
+    <strong>Don't be stupid!!!</strong> Make sure to test first before using in production. Standard SKU LB requires Standard SKU public IPs — mixing Basic and Standard SKUs will error out. Health probe failures remove VMs from rotation silently, so always verify probe status after deploy. If you see module errors, run <code style="font-family:Consolas,monospace">Update-Module Az</code> and restart PowerShell.
+  </div>
+
+  <div id="root"></div>
+</div>
+
+<footer>
+  <span>GoGuppy · GuppysPowershellCheatSheet</span>
+</footer>
+
+<script>
+const steps = [
+  {
+    n:"1", title:"Connect to Azure", tag:"key",
+    desc:"Authenticate to your Azure subscription.",
+    code:`Connect-AzAccount`
+  },
+  {
+    n:"2", title:"Create a Resource Group", tag:"key",
+    desc:"Container for all LB resources.",
+    code:`New-AzResourceGroup -Name "MyRG" -Location "westus2"`
+  },
+  {
+    n:"3", title:"Verify Resource Group", tag:"info",
+    desc:"Confirm the RG was created and is in Succeeded state.",
+    code:`Get-AzResourceGroup -Name "MyRG" | Select-Object ResourceGroupName, Location, ProvisioningState`
+  },
+  {
+    n:"4", title:"Create a VNet", tag:"net",
+    desc:"Address space only — no subnets yet.",
+    code:`New-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" -Location "westus2" -AddressPrefix "10.0.0.0/16"`
+  },
+  {
+    n:"5", title:"Add a Subnet to the VNet", tag:"net",
+    desc:"Pipes VNet in, adds subnet config, commits with Set-AzVirtualNetwork.",
+    code:`Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Add-AzVirtualNetworkSubnetConfig -Name "BackendSubnet" -AddressPrefix "10.0.1.0/24" | Set-AzVirtualNetwork`
+  },
+  {
+    n:"6", title:"Verify VNet and Subnet", tag:"info",
+    desc:"Confirm subnet was added and has the right prefix.",
+    code:`Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Select-Object Name, AddressPrefix, ProvisioningState`
+  },
+  {
+    n:"7", title:"Create a Standard Public IP", tag:"net",
+    desc:"Static Standard SKU — Basic SKU will not work with a Standard LB.",
+    code:`New-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" -Location "westus2" -AllocationMethod Static -Sku Standard`
+  },
+  {
+    n:"8", title:"Verify Public IP", tag:"info",
+    desc:"Confirm the IP was allocated and is Static/Standard.",
+    code:`Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object Name, IpAddress, PublicIpAllocationMethod, ProvisioningState`
+  },
+  {
+    n:"9", title:"Create the Load Balancer", tag:"key",
+    desc:"Empty LB shell — no frontend, pool, probe, or rules yet.",
+    code:`New-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" -Location "westus2" -Sku Standard`
+  },
+  {
+    n:"10", title:"Verify Load Balancer", tag:"info",
+    desc:"Confirm the LB exists and is in Succeeded state.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object Name, Location, ProvisioningState`
+  },
+  {
+    n:"11", title:"Add Frontend IP Configuration", tag:"net",
+    desc:"Binds the public IP to the LB as its inbound entry point.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerFrontendIpConfig -Name "MyFrontend" -PublicIpAddress (Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG") | Set-AzLoadBalancer`
+  },
+  {
+    n:"12", title:"Verify Frontend IP Config", tag:"info",
+    desc:"Confirm the frontend is bound to the correct public IP.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig | Select-Object Name, PrivateIpAllocationMethod, ProvisioningState`
+  },
+  {
+    n:"13", title:"Add a Backend Address Pool", tag:"net",
+    desc:"Creates the pool VM NICs will join. Traffic distributes across all members.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool" | Set-AzLoadBalancer`
+  },
+  {
+    n:"14", title:"Verify Backend Pool Exists", tag:"info",
+    desc:"Confirm the pool was created on the LB.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig | Select-Object Name, ProvisioningState`
+  },
+  {
+    n:"15", title:"Add a Health Probe", tag:"net",
+    desc:"HTTP probe on port 80 — 2 failures in a row pulls the VM from rotation.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerProbeConfig -Name "MyHTTPProbe" -Protocol Http -Port 80 -RequestPath "/" -IntervalInSeconds 15 -ProbeCount 2 | Set-AzLoadBalancer`
+  },
+  {
+    n:"16", title:"Verify Health Probe", tag:"info",
+    desc:"Confirm probe protocol, port, interval, and threshold.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerProbeConfig -Name "MyHTTPProbe" | Select-Object Name, Protocol, Port, IntervalInSeconds, NumberOfProbes`
+  },
+  {
+    n:"17", title:"Add a Load Balancing Rule — Port 80", tag:"net",
+    desc:"Routes frontend :80 → backend :80. Each subexpression pulls the required object inline.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerRuleConfig -Name "HTTP-Rule" -Protocol Tcp -FrontendPort 80 -BackendPort 80 -IdleTimeoutInMinutes 4 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") -BackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -Probe (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerProbeConfig -Name "MyHTTPProbe") | Set-AzLoadBalancer`
+  },
+  {
+    n:"18", title:"Add a Load Balancing Rule — Port 443", tag:"net",
+    desc:"Same pattern as port 80. Reuses the same probe and backend pool.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerRuleConfig -Name "HTTPS-Rule" -Protocol Tcp -FrontendPort 443 -BackendPort 443 -IdleTimeoutInMinutes 4 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") -BackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -Probe (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerProbeConfig -Name "MyHTTPProbe") | Set-AzLoadBalancer`
+  },
+  {
+    n:"19", title:"Verify Load Balancing Rules", tag:"info",
+    desc:"List all rules — ports, protocol, idle timeout.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty LoadBalancingRules | Select-Object Name, Protocol, FrontendPort, BackendPort, IdleTimeoutInMinutes`
+  },
+  {
+    n:"20", title:"Create a NIC in the Backend Subnet", tag:"net",
+    desc:"NIC attached to the backend subnet. SubnetId pulled inline via Where-Object.",
+    code:`New-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" -Location "westus2" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id`
+  },
+  {
+    n:"21", title:"Verify NIC", tag:"info",
+    desc:"Confirm the NIC was created and is in Succeeded state.",
+    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Select-Object Name, Location, ProvisioningState`
+  },
+  {
+    n:"22", title:"Associate NIC with the Backend Pool", tag:"net",
+    desc:"Updates ipconfig1 to register the NIC in the LB pool. Both subnet and pool fetched inline.",
+    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id -LoadBalancerBackendAddressPoolId (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool").Id | Set-AzNetworkInterface`
+  },
+  {
+    n:"23", title:"Verify NIC is in Backend Pool", tag:"info",
+    desc:"Confirm the NIC's ipconfig shows the LB backend pool association.",
+    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpConfigurations | Select-Object Name, PrivateIpAddress, LoadBalancerBackendAddressPools`
+  },
+  {
+    n:"24", title:"Set VM Admin Credentials", tag:"key",
+    desc:"Opens an interactive prompt — username and password for the local admin account.",
+    code:`$cred = Get-Credential`
+  },
+  {
+    n:"25", title:"Build VM Config and Deploy", tag:"slow",
+    desc:"Chains VM config through the pipeline and deploys. Uses $cred from the step above.",
+    code:`New-AzVMConfig -VMName "MyVM1" -VMSize "Standard_B1s" -SecurityType "TrustedLaunch" |
+  Set-AzVMOperatingSystem -Windows -ComputerName "MyVM1" -Credential $cred |
+  Set-AzVMSourceImage -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2022-datacenter-azure-edition" -Version "latest" |
+  Add-AzVMNetworkInterface -Id (Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG").Id |
+  New-AzVM -ResourceGroupName "MyRG" -Location "westus2"`
+  },
+  {
+    n:"26", title:"Add Inbound NAT Rule for RDP", tag:"warn",
+    desc:"Frontend port 50001 → VM port 3389. Direct RDP without Bastion.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1" -Protocol Tcp -FrontendPort 50001 -BackendPort 3389 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") | Set-AzLoadBalancer`
+  },
+  {
+    n:"27", title:"View Public IP Address", tag:"info",
+    desc:"The actual IP your traffic hits on the frontend.",
+    code:`Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object Name, IpAddress, PublicIpAllocationMethod, Sku`
+  },
+  {
+    n:"28", title:"View Full LB Overview", tag:"info",
+    desc:"Frontend, pool, probes, rules, and NAT rules in one object.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object Name, Sku, FrontendIpConfigurations, BackendAddressPools, Probes, LoadBalancingRules, InboundNatRules`
+  },
+  {
+    n:"29", title:"View Backend Pool Members", tag:"info",
+    desc:"Lists all NICs currently registered in the backend pool.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool" | Select-Object -ExpandProperty BackendIpConfigurations`
+  },
+  {
+    n:"30", title:"View NAT Rules", tag:"info",
+    desc:"Shows all inbound NAT rules and their port mappings.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty InboundNatRules | Select-Object Name, Protocol, FrontendPort, BackendPort`
+  },
+  {
+    n:"31", title:"Remove a Load Balancing Rule", tag:"fire",
+    desc:"Drops a specific rule. Other rules, probe, and pool are untouched.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Remove-AzLoadBalancerRuleConfig -Name "HTTP-Rule" | Set-AzLoadBalancer`
+  },
+  {
+    n:"32", title:"Remove a Health Probe", tag:"fire",
+    desc:"Remove all rules referencing this probe first or it will error.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Remove-AzLoadBalancerProbeConfig -Name "MyHTTPProbe" | Set-AzLoadBalancer`
+  },
+  {
+    n:"33", title:"Remove a NAT Rule", tag:"fire",
+    desc:"Drops the specific NAT rule by name.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Remove-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1" | Set-AzLoadBalancer`
+  },
+  {
+    n:"34", title:"Delete the Load Balancer Only", tag:"fire",
+    desc:"Removes the LB. VMs, NICs, VNet, and public IP remain.",
+    code:`Remove-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG"`
+  },
+  {
+    n:"35", title:"Delete the Resource Group", tag:"fire",
+    desc:"Nukes everything. No undo.",
+    code:`Remove-AzResourceGroup -Name "MyRG"`
+  },
+];
+
+const tagMap = {
+  key:  { label:"required",    cls:"tag-key"  },
+  slow: { label:"slow",        cls:"tag-slow" },
+  fire: { label:"destructive", cls:"tag-fire" },
+  warn: { label:"caution",     cls:"tag-warn" },
+  net:  { label:"networking",  cls:"tag-net"  },
+  info: { label:"info",        cls:"tag-info" },
+};
+
+const sectionBreaks = {
+  "1":  "Setup",
+  "4":  "Prerequisites",
+  "9":  "Deploy Load Balancer",
+  "20": "Backend Pool & VMs",
+  "26": "Optional",
+  "27": "Inspect",
+  "31": "Manage & Teardown",
+};
+
+const root = document.getElementById('root');
+let currentSection = null;
+
+steps.forEach(s => {
+  if (sectionBreaks[s.n] && sectionBreaks[s.n] !== currentSection) {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sectionBreaks[s.n];
+    root.appendChild(lbl);
+    currentSection = sectionBreaks[s.n];
+  }
+
+  const tagHTML = s.tag && tagMap[s.tag]
+    ? `<span class="tag ${tagMap[s.tag].cls}">${tagMap[s.tag].label}</span>` : '';
+
+  const escaped = s.code
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="step">${s.n}</div>
+      <div class="card-info">
+        <div class="card-title">${s.title} ${tagHTML}</div>
+        <div class="card-desc">${s.desc}</div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-block">${escaped}</div>
+      <button class="copy-btn">copy</button>
+    </div>`;
+
+  card.querySelector('.copy-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(s.code).then(() => {
+      this.textContent = '✓ copied';
+      this.classList.add('done');
+      setTimeout(() => { this.textContent = 'copy'; this.classList.remove('done'); }, 1600);
+    });
+  });
+
+  root.appendChild(card);
+});
+</script>
+</body>
+</html>
