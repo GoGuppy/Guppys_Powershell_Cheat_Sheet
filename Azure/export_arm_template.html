@@ -102,8 +102,8 @@ const steps = [
     desc:"Pick how you want to target the resource — delete the line you don't need.",
     codeHtml:
       `<span style="color:#484f58"># ── pick one, delete the other ──────────────────────────────────────────────────</span>\n` +
-      `<span style="color:#3fb950">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force  </span><span style="color:#484f58"> # by name</span>\n` +
-      `<span style="color:#d29922">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force             </span><span style="color:#484f58"> # by type</span>`,
+      `<span style="color:#58a6ff">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force  </span><span style="color:#484f58"> # by name</span>\n` +
+      `<span style="color:#bc8cff">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force             </span><span style="color:#484f58"> # by type</span>`,
     codePlain:
       `# by name\nExport-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force\n# by type\nExport-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force`
   },
