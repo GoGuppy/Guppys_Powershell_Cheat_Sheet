@@ -85,81 +85,84 @@ const steps = [
     desc:"Exports every resource in the group as a single ARM template file.",
     code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -Force`
   },
-  {
-    n:"3", title:"Export with Parameter Default Values", tag:"key",
-    desc:"Includes current values as defaults in the parameters block — useful for redeployment.",
-    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -IncludeParameterDefaultValue -Force`
-  },
-  {
-    n:"4", title:"Export and Skip Resource Name Parameterization", tag:"info",
-    desc:"Hardcodes resource names instead of turning them into parameters. Simpler output.",
-    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Path "C:\\temp\\rg-export.json" -SkipResourceNameParameterization -Force`
-  },
 
   // ── Export Specific Resources ─────────────────────────────────────────────
   {
-    n:"5", title:"List Resource IDs in a Resource Group", tag:"info",
-    desc:"Get the resource IDs you need before filtering an export.",
-    code:`Get-AzResource -ResourceGroupName "myrg" | Select-Object Name, ResourceType, ResourceId`
+    n:"3", title:"List Resources in a Resource Group", tag:"info",
+    desc:"Pick what you want to see — delete the other lines. Useful before filtering an export.",
+    codeHtml:
+      `<span style="color:#484f58"># ── pick one, delete the rest ───────────────────────────────────────────────────</span>\n` +
+      `<span style="color:#58a6ff">Get-AzResource -ResourceGroupName "myrg" | Select-Object Name, ResourceType, ResourceId </span><span style="color:#484f58"> # names + types + full resource IDs</span>\n` +
+      `<span style="color:#3fb950">Get-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty Name          </span><span style="color:#484f58"> # names only</span>\n` +
+      `<span style="color:#d29922">Get-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty ResourceType  </span><span style="color:#484f58"> # resource types only</span>\n` +
+      `<span style="color:#bc8cff">Get-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty ResourceId    </span><span style="color:#484f58"> # full resource IDs only</span>`,
+    codePlain:
+      `# pick one — delete the others\nGet-AzResource -ResourceGroupName "myrg" | Select-Object Name, ResourceType, ResourceId\nGet-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty Name\nGet-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty ResourceType\nGet-AzResource -ResourceGroupName "myrg" | Select-Object -ExpandProperty ResourceId`
   },
   {
-    n:"6", title:"Export a Specific Resource by Name", tag:"key",
-    desc:"Looks up the resource ID by name and pipes it straight into the export. Swap the Name and ResourceType for your target resource.",
-    code:`Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\vm-export.json" -Force`
+    n:"4", title:"Export a Specific Resource", tag:"key",
+    desc:"Pick how you want to target the resource — delete the other lines.",
+    codeHtml:
+      `<span style="color:#484f58"># ── pick one, delete the rest ───────────────────────────────────────────────────</span>\n` +
+      `<span style="color:#58a6ff">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force </span><span style="color:#484f58"> # by name + type</span>\n` +
+      `<span style="color:#3fb950">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myrg/providers/Microsoft.Compute/virtualMachines/myvm") -Path "C:\\temp\\export.json" -Force                                   </span><span style="color:#484f58"> # by full resource ID</span>\n` +
+      `<span style="color:#d29922">Export-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -ResourceType "Microsoft.Network/virtualNetworks" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force              </span><span style="color:#484f58"> # all resources of a type</span>`,
+    codePlain:
+      `# by name + type\nExport-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -Name "myvm" -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force\n# by full resource ID\nExport-AzResourceGroup -ResourceGroupName "myrg" -Resource @("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myrg/providers/Microsoft.Compute/virtualMachines/myvm") -Path "C:\\temp\\export.json" -Force\n# all resources of a type\nExport-AzResourceGroup -ResourceGroupName "myrg" -Resource @(Get-AzResource -ResourceGroupName "myrg" -ResourceType "Microsoft.Network/virtualNetworks" | Select-Object -ExpandProperty ResourceId) -Path "C:\\temp\\export.json" -Force`
   },
 
   // ── Deployment History ────────────────────────────────────────────────────
   {
-    n:"7", title:"List All Deployments in a Resource Group", tag:"info",
+    n:"5", title:"List All Deployments in a Resource Group", tag:"info",
     desc:"Shows deployment names, state, and timestamps. You need the name for steps 8–9.",
     code:`Get-AzResourceGroupDeployment -ResourceGroupName "myrg" | Select-Object DeploymentName, ProvisioningState, Timestamp | Sort-Object Timestamp -Descending`
   },
   {
-    n:"8", title:"Get Details of a Specific Deployment", tag:"info",
+    n:"6", title:"Get Details of a Specific Deployment", tag:"info",
     desc:"Shows parameters, outputs, and mode for one deployment.",
     code:`Get-AzResourceGroupDeployment -ResourceGroupName "myrg" -DeploymentName "mydeployment"`
   },
   {
-    n:"9", title:"Export a Deployment's Original Template", tag:"key",
+    n:"7", title:"Export a Deployment's Original Template", tag:"key",
     desc:"Retrieves the exact template submitted at deploy time — cleaner than a resource group export.",
     code:`Save-AzResourceGroupDeploymentTemplate -ResourceGroupName "myrg" -DeploymentName "mydeployment" -Path "C:\\temp\\deployment-template.json" -Force`
   },
 
   // ── Inspect ───────────────────────────────────────────────────────────────
   {
-    n:"10", title:"View Exported JSON in Terminal", tag:"info",
+    n:"8", title:"View Exported JSON in Terminal", tag:"info",
     desc:"Pretty-prints the exported file directly in the terminal.",
     code:`Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json | ConvertTo-Json -Depth 100`
   },
   {
-    n:"11", title:"Count Resources in Exported Template", tag:"info",
+    n:"9", title:"Count Resources in Exported Template", tag:"info",
     desc:"Quick sanity check — confirms how many resources were captured.",
     code:`(Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json).resources.Count`
   },
   {
-    n:"12", title:"List Resource Types in Exported Template", tag:"info",
+    n:"10", title:"List Resource Types in Exported Template", tag:"info",
     desc:"Shows every resource type included in the exported file.",
     code:`(Get-Content "C:\\temp\\rg-export.json" | ConvertFrom-Json).resources | Select-Object -ExpandProperty type | Sort-Object -Unique`
   },
 
   // ── Export to Bicep ───────────────────────────────────────────────────────
   {
-    n:"13", title:"Install the Bicep CLI", tag:"key",
+    n:"11", title:"Install the Bicep CLI", tag:"key",
     desc:"Az PowerShell has no native Bicep export — you need the Bicep CLI to decompile. Run once.",
     code:`winget install Microsoft.Bicep`
   },
   {
-    n:"14", title:"Verify Bicep CLI is Installed", tag:"info",
+    n:"12", title:"Verify Bicep CLI is Installed", tag:"info",
     desc:"Confirms the version and that the CLI is on your PATH.",
     code:`bicep --version`
   },
   {
-    n:"15", title:"Decompile ARM JSON to Bicep", tag:"key",
+    n:"13", title:"Decompile ARM JSON to Bicep", tag:"key",
     desc:"Converts any exported ARM JSON file into a .bicep file in the same directory. Run after any export step.",
     code:`bicep decompile "C:\\temp\\rg-export.json"`
   },
   {
-    n:"16", title:"View the Decompiled Bicep File", tag:"info",
+    n:"14", title:"View the Decompiled Bicep File", tag:"info",
     desc:"Prints the .bicep output to the terminal. The file is saved alongside the original JSON.",
     code:`Get-Content "C:\\temp\\rg-export.bicep"`
   },
@@ -177,10 +180,10 @@ const tagMap = {
 const sectionBreaks = {
   "1":  "Setup",
   "2":  "Export Resource Group",
-  "5":  "Export Specific Resources",
-  "7":  "Deployment History",
-  "10": "Inspect",
-  "13": "Export to Bicep",
+  "3":  "Export Specific Resources",
+  "5":  "Deployment History",
+  "8":  "Inspect",
+  "11": "Export to Bicep",
 };
 
 const root = document.getElementById('root');
