@@ -116,7 +116,7 @@ const steps = [
   },
   {
     n:"9", title:"Create the Load Balancer", tag:"key",
-    desc:"Empty LB shell — no frontend, pool, probe, or rules yet.",
+    desc:"Empty LB shell — no frontend, pool, or rules yet.",
     code:`New-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" -Location "westus2" -Sku Standard`
   },
   {
@@ -160,210 +160,177 @@ const steps = [
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty LoadBalancingRules | Select-Object Name, Protocol, FrontendPort, BackendPort, IdleTimeoutInMinutes`
   },
   {
-    n:"18", title:"Create NIC for VM1", tag:"net",
-    desc:"NIC attached to the backend subnet. SubnetId pulled inline via Where-Object.",
-    code:`New-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" -Location "westus2" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id`
+    n:"18", title:"Create NICs for VM1 and VM2", tag:"net",
+    desc:"Both NICs attached to BackendSubnet. Run one after the other.",
+    code:`New-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" -Location "westus2" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id
+New-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" -Location "westus2" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id`
   },
   {
-    n:"19", title:"Verify VM1 NIC", tag:"info",
-    desc:"Confirm the NIC was created and is in Succeeded state.",
-    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Select-Object Name, Location, ProvisioningState`
+    n:"19", title:"Verify VM1 and VM2 NICs", tag:"info",
+    desc:"Confirm both NICs were created and are in Succeeded state.",
+    code:`"MyVM1-NIC","MyVM2-NIC" | ForEach-Object { Get-AzNetworkInterface -Name $_ -ResourceGroupName "MyRG" | Select-Object Name, Location, ProvisioningState }`
   },
   {
-    n:"20", title:"Associate VM1 NIC with Backend Pool", tag:"net",
-    desc:"Registers VM1's NIC in the LB pool. Uses all-object parameters to avoid parameter set conflicts.",
-    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") | Set-AzNetworkInterface`
+    n:"20", title:"Associate VM1 and VM2 NICs with Backend Pool", tag:"net",
+    desc:"Registers both NICs in the LB pool. Run one after the other.",
+    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") | Set-AzNetworkInterface
+Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") | Set-AzNetworkInterface`
   },
   {
-    n:"21", title:"Verify VM1 NIC is in Backend Pool", tag:"info",
-    desc:"Confirm ipconfig1 shows the LB backend pool association.",
-    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpConfigurations | Select-Object Name, PrivateIpAddress, LoadBalancerBackendAddressPools`
+    n:"21", title:"Verify VM1 and VM2 NICs are in Backend Pool", tag:"info",
+    desc:"Both ipcconfig1 entries should show the LB backend pool association.",
+    code:`"MyVM1-NIC","MyVM2-NIC" | ForEach-Object { Get-AzNetworkInterface -Name $_ -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpConfigurations | Select-Object Name, PrivateIpAddress, LoadBalancerBackendAddressPools }`
   },
   {
-    n:"22", title:"Create NIC for VM2", tag:"net",
-    desc:"Same subnet, same pool. Azure assigns a different private IP automatically.",
-    code:`New-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" -Location "westus2" -SubnetId (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }).Id`
-  },
-  {
-    n:"23", title:"Verify VM2 NIC", tag:"info",
-    desc:"Confirm VM2's NIC was created and is in Succeeded state.",
-    code:`Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Select-Object Name, Location, ProvisioningState`
-  },
-  {
-    n:"24", title:"Associate VM2 NIC with Backend Pool", tag:"net",
-    desc:"Registers VM2's NIC in the same LB pool as VM1.",
-    code:`Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") | Set-AzNetworkInterface`
-  },
-  {
-    n:"25", title:"Verify VM2 NIC is in Backend Pool", tag:"info",
-    desc:"Both VM1 and VM2 NICs should now show the pool association.",
-    code:`Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpConfigurations | Select-Object Name, PrivateIpAddress, LoadBalancerBackendAddressPools`
-  },
-  {
-    n:"26", title:"Set VM Admin Credentials", tag:"key",
+    n:"22", title:"Set VM Admin Credentials", tag:"key",
     desc:"Opens an interactive prompt — same credentials will be used for both VMs.",
     code:`$cred = Get-Credential`
   },
   {
-    n:"27", title:"Build and Deploy VM1", tag:"slow",
-    desc:"Chains VM config through the pipeline and deploys VM1 using MyVM1-NIC.",
+    n:"23", title:"Build and Deploy VM1 and VM2", tag:"slow",
+    desc:"Chains VM config through the pipeline. Run VM1 first, then VM2. Reuses $cred from step 22.",
     code:`New-AzVMConfig -VMName "MyVM1" -VMSize "Standard_D2s_v3" -SecurityType "TrustedLaunch" |
   Set-AzVMOperatingSystem -Windows -ComputerName "MyVM1" -Credential $cred |
   Set-AzVMSourceImage -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2022-datacenter-azure-edition" -Version "latest" |
   Add-AzVMNetworkInterface -Id (Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG").Id |
-  New-AzVM -ResourceGroupName "MyRG" -Location "westus2"`
-  },
-  {
-    n:"28", title:"Build and Deploy VM2", tag:"slow",
-    desc:"Same config as VM1 — different name and NIC. Reuses $cred from step 26.",
-    code:`New-AzVMConfig -VMName "MyVM2" -VMSize "Standard_D2s_v3" -SecurityType "TrustedLaunch" |
+  New-AzVM -ResourceGroupName "MyRG" -Location "westus2"
+
+New-AzVMConfig -VMName "MyVM2" -VMSize "Standard_D2s_v3" -SecurityType "TrustedLaunch" |
   Set-AzVMOperatingSystem -Windows -ComputerName "MyVM2" -Credential $cred |
   Set-AzVMSourceImage -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2022-datacenter-azure-edition" -Version "latest" |
   Add-AzVMNetworkInterface -Id (Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG").Id |
   New-AzVM -ResourceGroupName "MyRG" -Location "westus2"`
   },
   {
-    n:"29", title:"Add NAT Rule for VM1 RDP", tag:"warn",
-    desc:"Frontend port 50001 → VM1 port 3389.",
-    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1" -Protocol Tcp -FrontendPort 50001 -BackendPort 3389 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") | Set-AzLoadBalancer`
+    n:"24", title:"Add NAT Rules for VM1 and VM2 RDP", tag:"warn",
+    desc:"50001 → VM1 :3389 and 50002 → VM2 :3389. Run one after the other.",
+    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1" -Protocol Tcp -FrontendPort 50001 -BackendPort 3389 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") | Set-AzLoadBalancer
+Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM2" -Protocol Tcp -FrontendPort 50002 -BackendPort 3389 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") | Set-AzLoadBalancer`
   },
   {
-    n:"30", title:"Add NAT Rule for VM2 RDP", tag:"warn",
-    desc:"Frontend port 50002 → VM2 port 3389.",
-    code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Add-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM2" -Protocol Tcp -FrontendPort 50002 -BackendPort 3389 -FrontendIpConfiguration (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerFrontendIpConfig -Name "MyFrontend") | Set-AzLoadBalancer`
+    n:"25", title:"Associate NAT Rules with VM1 and VM2 NICs", tag:"net",
+    desc:"Links NAT rules to each VM's ipconfig. Run one after the other.",
+    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -LoadBalancerInboundNatRule (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1") | Set-AzNetworkInterface
+Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -LoadBalancerInboundNatRule (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM2") | Set-AzNetworkInterface`
   },
   {
-    n:"31", title:"Associate NAT Rule with VM1 NIC", tag:"net",
-    desc:"Links NAT-RDP-VM1 to VM1's ipconfig. All-object parameters required.",
-    code:`Get-AzNetworkInterface -Name "MyVM1-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -LoadBalancerInboundNatRule (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1") | Set-AzNetworkInterface`
-  },
-  {
-    n:"32", title:"Associate NAT Rule with VM2 NIC", tag:"net",
-    desc:"Links NAT-RDP-VM2 to VM2's ipconfig.",
-    code:`Get-AzNetworkInterface -Name "MyVM2-NIC" -ResourceGroupName "MyRG" | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -Subnet (Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "BackendSubnet" }) -LoadBalancerBackendAddressPool (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool") -LoadBalancerInboundNatRule (Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM2") | Set-AzNetworkInterface`
-  },
-  {
-    n:"33", title:"Create an NSG for the Backend Subnet", tag:"net",
+    n:"26", title:"Create an NSG for the Backend Subnet", tag:"net",
     desc:"Bare NSG — Azure default rules applied automatically.",
     code:`New-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG" -Location "westus2"`
   },
   {
-    n:"34", title:"Get Your Public IP", tag:"info",
+    n:"27", title:"Get Your Public IP", tag:"info",
     desc:"Returns your current public IP — use this in the RDP rule below.",
     code:`(Invoke-RestMethod -Uri "https://api.ipify.org")`
   },
   {
-    n:"35", title:"Allow RDP from Your IP Only", tag:"warn",
+    n:"28", title:"Allow RDP from Your IP Only", tag:"warn",
     desc:"Replace x.x.x.x with your public IP. Locks port 3389 to your machine only.",
     code:`Get-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG" | Add-AzNetworkSecurityRuleConfig -Name "Allow-RDP-MyIP" -Protocol Tcp -Direction Inbound -Priority 100 -SourceAddressPrefix "x.x.x.x" -SourcePortRange "*" -DestinationAddressPrefix "*" -DestinationPortRange 3389 -Access Allow | Set-AzNetworkSecurityGroup`
   },
   {
-    n:"36", title:"Allow HTTP Inbound on NSG", tag:"net",
+    n:"29", title:"Allow HTTP Inbound on NSG", tag:"net",
     desc:"Required for HTTP traffic to reach backend VMs.",
     code:`Get-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG" | Add-AzNetworkSecurityRuleConfig -Name "Allow-HTTP" -Protocol Tcp -Direction Inbound -Priority 200 -SourceAddressPrefix "*" -SourcePortRange "*" -DestinationAddressPrefix "*" -DestinationPortRange 80 -Access Allow | Set-AzNetworkSecurityGroup`
   },
   {
-    n:"37", title:"Associate NSG with the Backend Subnet", tag:"net",
+    n:"30", title:"Associate NSG with the Backend Subnet", tag:"net",
     desc:"Applies the NSG to the entire subnet — affects both VMs.",
     code:`Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Set-AzVirtualNetworkSubnetConfig -Name "BackendSubnet" -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup (Get-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG") | Set-AzVirtualNetwork`
   },
   {
-    n:"38", title:"Verify NSG on Subnet", tag:"info",
+    n:"31", title:"Verify NSG on Subnet", tag:"info",
     desc:"Confirm the NSG is attached to the backend subnet.",
     code:`Get-AzVirtualNetwork -Name "MyVNet" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty Subnets | Select-Object Name, AddressPrefix, NetworkSecurityGroup`
   },
   {
-    n:"39", title:"View Public IP Address", tag:"info",
+    n:"32", title:"View Public IP Address", tag:"info",
     desc:"The IP your traffic hits on the LB frontend.",
     code:`Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object Name, IpAddress, PublicIpAllocationMethod, Sku`
   },
   {
-    n:"40", title:"View Full LB Overview", tag:"info",
+    n:"33", title:"View Full LB Overview", tag:"info",
     desc:"Frontend, pool, rules, and NAT rules in one object.",
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object Name, Sku, FrontendIpConfigurations, BackendAddressPools, LoadBalancingRules, InboundNatRules`
   },
   {
-    n:"41", title:"View Backend Pool Members", tag:"info",
+    n:"34", title:"View Backend Pool Members", tag:"info",
     desc:"Should show both VM1 and VM2 NICs registered.",
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Get-AzLoadBalancerBackendAddressPoolConfig -Name "MyBackendPool" | Select-Object -ExpandProperty BackendIpConfigurations`
   },
   {
-    n:"42", title:"View NAT Rules", tag:"info",
+    n:"35", title:"View NAT Rules", tag:"info",
     desc:"Shows both NAT rules and their port mappings.",
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty InboundNatRules | Select-Object Name, Protocol, FrontendPort, BackendPort`
   },
   {
-    n:"43", title:"View NSG Rules", tag:"info",
+    n:"36", title:"View NSG Rules", tag:"info",
     desc:"SecurityRules = custom. DefaultSecurityRules = Azure built-in.",
     code:`Get-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG" | Select-Object SecurityRules, DefaultSecurityRules`
   },
   {
-    n:"44", title:"Remove a Load Balancing Rule", tag:"fire",
+    n:"37", title:"Remove a Load Balancing Rule", tag:"fire",
     desc:"Drops a specific rule. Other rules and pool untouched.",
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Remove-AzLoadBalancerRuleConfig -Name "HTTP-Rule" | Set-AzLoadBalancer`
   },
   {
-    n:"45", title:"Remove a NAT Rule", tag:"fire",
+    n:"38", title:"Remove a NAT Rule", tag:"fire",
     desc:"Drops the specific NAT rule by name.",
     code:`Get-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG" | Remove-AzLoadBalancerInboundNatRuleConfig -Name "NAT-RDP-VM1" | Set-AzLoadBalancer`
   },
   {
-    n:"46", title:"Remove an NSG Rule", tag:"fire",
+    n:"39", title:"Remove an NSG Rule", tag:"fire",
     desc:"Drops a specific NSG rule without touching the NSG itself.",
     code:`Get-AzNetworkSecurityGroup -Name "MyBackendNSG" -ResourceGroupName "MyRG" | Remove-AzNetworkSecurityRuleConfig -Name "Allow-RDP-MyIP" | Set-AzNetworkSecurityGroup`
   },
   {
-    n:"47", title:"Delete the Load Balancer Only", tag:"fire",
+    n:"40", title:"Delete the Load Balancer Only", tag:"fire",
     desc:"Removes the LB. VMs, NICs, VNet, NSG, and public IP remain.",
     code:`Remove-AzLoadBalancer -Name "MyLB" -ResourceGroupName "MyRG"`
   },
   {
-    n:"48", title:"Delete the Resource Group", tag:"fire",
+    n:"41", title:"Delete the Resource Group", tag:"fire",
     desc:"Nukes everything. No undo.",
     code:`Remove-AzResourceGroup -Name "MyRG"`
   },
   {
-    n:"49", title:"Install IIS on VM1 via Run Command", tag:"key",
-    desc:"Installs IIS and writes the VM hostname to the default page so you can tell VMs apart.",
-    code:`Invoke-AzVMRunCommand -ResourceGroupName "MyRG" -VMName "MyVM1" -CommandId "RunPowerShellScript" -ScriptString "Install-WindowsFeature -Name Web-Server -IncludeManagementTools; Set-Content -Path 'C:\\inetpub\\wwwroot\\Default.htm' -Value 'VM1'"`
+    n:"42", title:"Install IIS on VM1 and VM2", tag:"key",
+    desc:"Installs IIS and writes the VM hostname to the default page. Run one after the other.",
+    code:`Invoke-AzVMRunCommand -ResourceGroupName "MyRG" -VMName "MyVM1" -CommandId "RunPowerShellScript" -ScriptString "Install-WindowsFeature -Name Web-Server -IncludeManagementTools; Set-Content -Path 'C:\\inetpub\\wwwroot\\Default.htm' -Value 'VM1'"
+Invoke-AzVMRunCommand -ResourceGroupName "MyRG" -VMName "MyVM2" -CommandId "RunPowerShellScript" -ScriptString "Install-WindowsFeature -Name Web-Server -IncludeManagementTools; Set-Content -Path 'C:\\inetpub\\wwwroot\\Default.htm' -Value 'VM2'"`
   },
   {
-    n:"50", title:"Install IIS on VM2 via Run Command", tag:"key",
-    desc:"Same as above — page content says VM2 so you can see which server the LB hit.",
-    code:`Invoke-AzVMRunCommand -ResourceGroupName "MyRG" -VMName "MyVM2" -CommandId "RunPowerShellScript" -ScriptString "Install-WindowsFeature -Name Web-Server -IncludeManagementTools; Set-Content -Path 'C:\\inetpub\\wwwroot\\Default.htm' -Value 'VM2'"`
-  },
-  {
-    n:"51", title:"Get the LB Public IP", tag:"info",
+    n:"43", title:"Get the LB Public IP", tag:"info",
     desc:"Copy this IP — you'll hit it in the browser to test load balancing.",
     code:`Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpAddress`
   },
   {
-    n:"52", title:"Hit the LB from Your Browser", tag:"info",
+    n:"44", title:"Hit the LB from Your Browser", tag:"info",
     desc:"Open http://<LB-IP> in a browser. You should see either VM1 or VM2 depending on which backend got the request.",
     code:`Start-Process "http://$(Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpAddress)"`
   },
   {
-    n:"53", title:"Hit the LB Repeatedly to See Balancing", tag:"info",
+    n:"45", title:"Hit the LB Repeatedly to See Balancing", tag:"info",
     desc:"Loops 10 requests to the LB and prints which VM responded each time. Watch it alternate.",
     code:`1..10 | ForEach-Object { Invoke-WebRequest -Uri "http://$(Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpAddress)" -UseBasicParsing | Select-Object -ExpandProperty Content }`
   },
   {
-    n:"54", title:"Stop VM1 and Confirm Failover", tag:"slow",
+    n:"46", title:"Stop VM1 and Confirm Failover", tag:"slow",
     desc:"Shuts down VM1. The LB removes it from rotation. All requests should now return VM2.",
     code:`Stop-AzVM -ResourceGroupName "MyRG" -Name "MyVM1" -Force`
   },
   {
-    n:"55", title:"Verify Only VM2 Responds", tag:"info",
+    n:"47", title:"Verify Only VM2 Responds", tag:"info",
     desc:"Run again after stopping VM1 — every response should say VM2.",
     code:`1..5 | ForEach-Object { Invoke-WebRequest -Uri "http://$(Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpAddress)" -UseBasicParsing | Select-Object -ExpandProperty Content }`
   },
   {
-    n:"56", title:"Start VM1 Back Up", tag:"slow",
+    n:"48", title:"Start VM1 Back Up", tag:"slow",
     desc:"Brings VM1 back online. It re-enters rotation automatically once Azure detects it's responding.",
     code:`Start-AzVM -ResourceGroupName "MyRG" -Name "MyVM1"`
   },
   {
-    n:"57", title:"Verify Both VMs Are Back in Rotation", tag:"info",
+    n:"49", title:"Verify Both VMs Are Back in Rotation", tag:"info",
     desc:"Run again after VM1 restarts — should start alternating between VM1 and VM2 again.",
     code:`1..10 | ForEach-Object { Invoke-WebRequest -Uri "http://$(Get-AzPublicIpAddress -Name "MyLB-PIP" -ResourceGroupName "MyRG" | Select-Object -ExpandProperty IpAddress)" -UseBasicParsing | Select-Object -ExpandProperty Content }`
   },
@@ -383,10 +350,10 @@ const sectionBreaks = {
   "4":  "Prerequisites",
   "9":  "Deploy Load Balancer",
   "18": "Backend Pool & VMs",
-  "29": "Optional",
-  "39": "Inspect",
-  "44": "Manage & Teardown",
-  "49": "Testing",
+  "24": "Optional",
+  "32": "Inspect",
+  "37": "Manage & Teardown",
+  "42": "Testing",
 };
 
 const root = document.getElementById('root');
